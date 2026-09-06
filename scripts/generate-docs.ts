@@ -88,7 +88,7 @@ const known = new Set(collected.map((c) => c.name));
 const linkRef = (name: string) => (known.has(name) ? `[${name}](#${slug(name)})` : name);
 const hasSep = (s: string) => s.includes(" | ") || s.includes(" & ") || s.includes(" => ");
 const paren = (s: string) => (hasSep(s) ? `(${s})` : s);
-const escCell = (s: string) => (s ?? "").replace(/\|/g, "\\|").replace(/\n/g, " ");
+const escCell = (s: string) => (s ?? "").replace(/\\/g, "\\\\").replace(/\|/g, "\\|").replace(/\n/g, " ");
 
 // Type -> string. `inline` collapses object literals to a single line; when
 // false, object literals are pretty-printed (used for fenced type blocks).
