@@ -24,6 +24,7 @@ relative `../src` paths.
 | [`15-rich-message.ts`](./15-rich-message.ts) | `RichMessageBuilder`, `RichTextBuilder`, `richMessageButton`/`richListItem`, `sendRichMessage` (blocks + `html` mode) | `BOT_TOKEN=... CHAT_ID=... bun examples/15-rich-message.ts` |
 | [`16-sessions.ts`](./16-sessions.ts) | `createSession()` + `session.get(ctx)`, durable `FileSessionStorage` (`/node`), `taggedReplies` for a name->email reply flow | `BOT_TOKEN=... bun examples/16-sessions.ts` |
 | [`17-callback-tracking.ts`](./17-callback-tracking.ts) | Routing button presses two ways: stateless `callback_data` paging, vs. `expectCallback`/`matchCallback(ctx, { once: true })` for an oversized, private, one-shot confirmation | `BOT_TOKEN=... bun examples/17-callback-tracking.ts` |
+| [`18-nextjs-with-speed-insights.ts`](./18-nextjs-with-speed-insights.ts) | Integrating Vercel Speed Insights with Next.js App Router + `nextAppWebhook`, tracking Core Web Vitals and performance metrics | Next.js app with `@vercel/speed-insights` (illustrative) |
 
 The framework webhook examples (03-05) target serverless/framework platforms and
 aren't standalone-runnable here, but they typecheck and show the exact wiring.

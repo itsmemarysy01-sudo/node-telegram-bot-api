@@ -94,6 +94,7 @@
     "@biomejs/biome": "^2.5.0",
     "@types/bun": "^1.4.0",
     "@types/node": "^25.9.3",
+    "@vercel/speed-insights": "^2.0.0",
     "bun": "^1.4.0",
     "tsx": "^4.22.3",
     "typedoc": "^0.28.19",
