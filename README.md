@@ -2,7 +2,7 @@
 
 <div align=center>
 
-[![Bot API](https://img.shields.io/badge/Bot%20API-v.10.3-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
+[![Bot API](https://img.shields.io/badge/Bot%20API-v.10.4-00aced.svg?style=flat-square&logo=telegram)](https://core.telegram.org/bots/api)
 [![npm package](https://img.shields.io/npm/v/node-telegram-bot-api?logo=npm&style=flat-square)](https://www.npmjs.org/package/node-telegram-bot-api)
 
 [![https://telegram.me/node_telegram_bot_api](https://img.shields.io/badge/💬%20Telegram-Channel-blue.svg?style=flat-square)](https://telegram.me/node_telegram_bot_api)
@@ -19,7 +19,7 @@
 npm install node-telegram-bot-api
 ```
 
-> **Runs on **Bun, modern Node.js, Deno, Cloudflare Workers and Vercel Functions λ**
+> **Runs on Bun, modern Node.js, Deno, Cloudflare Workers and Vercel Functions λ**
 
 ## 🚀 Usage
 
@@ -309,7 +309,9 @@ bot.use(session);
 bot.command("count", (ctx) => ctx.reply(`Seen ${++session.get(ctx).data.count} times`));
 ```
 
-Both return the same handle, which is also where the non-bag members live: `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
+Both return the same handle, which is also where the non-bag members live: `.ext()` for layers built on sessions, and `.delete()`, which evicts the whole key on flush - an explicit end-of-conversation / `/forget` / erasure hook. `ctx.getSession()` and `session.get(ctx)` throw when the middleware did not run for this update (not registered, or no derivable key).
+
+For a conversation with several steps, use a discriminated union as the session type. Each step can require different data: picking a destination requires a ship name, and launch requires both. See [`examples/12-conversation.ts`](examples/12-conversation.ts) to name a spaceship, pick a planet, and launch, with `/start` and `/cancel`.
 
 ### Reply tracking
 
@@ -345,6 +347,22 @@ bot.on("message", async (ctx, next) => {
 `taggedReplies` is sugar over the primitives `expectReply(ctx, id, marker?, { ttlSeconds? })` (stores any JSON marker object), `matchReply<M>(ctx)` (returns it typed as `M`) and `forgetReply(ctx, id)` (cancels a pending expectation). With a single prompt in flight you can drop the marker entirely - its presence alone is the signal.
 
 Nothing expires on its own: a prompt answered tomorrow is normal, so a marker stays pending until it matches or you forget it. Pass `ttlSeconds` for prompts that go stale (a confirmation, a one-time code) - expired entries are pruned the next time the layer touches the session, which is what keeps a chat that ignores every prompt from growing its envelope forever.
+
+TTL bounds a marker's *age*, not the table's *size* - a chat that fires many short-lived keyboards can still balloon between prunes. For a hard per-chat cap, pass `replyTracking` to `createSession`:
+
+```ts
+createSession<Session>({
+  store: new MemorySessionStorage(),
+  replyTracking: {
+    maxEntriesPerChat: 50, // cap the live markers per chat...
+    maxBytesPerChat: 8192, // ...and their serialized size
+    defaultTtlSeconds: 3600, // a TTL for every expectation that sets none
+    slidingTtl: true, // ...refreshed each time the marker is used
+  },
+});
+```
+
+Over budget, the **least-recently-used** markers are evicted - recency, not age, so an actively-pressed old keyboard outlives an idle newer one (a match stamps recency too, not just a record). All four fields are optional; with no `replyTracking` the tables stay unbounded, as before.
 
 The default session key is per **chat**, so in a group the marker belongs to the group and any member's reply or press matches it. Put the asker's id in the marker and check it when that matters.
 
@@ -395,17 +413,46 @@ Every backend implements the same `SessionStore`: a **string** key/value contrac
 | `SqliteSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | `bun:sqlite`; sync; single host |
 | `SqlSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `SQL` (Postgres); cross-instance |
 | `RedisSessionStorage` | `node-telegram-bot-api/bun` | Bun | ✅ | Bun `redis`; cross-instance; optional TTL |
+| `S3SessionStorage` | `node-telegram-bot-api` | any* | ✅ | S3-compatible (AWS S3, R2, MinIO, Spaces); SigV4 over `fetch`; cross-instance |
+
+\*`S3SessionStorage` uses the global `crypto.subtle` (SigV4 signing), present on Node 19+, Bun, Deno and edge. On Node 18 pass one in: `crypto: (await import("node:crypto")).webcrypto as Crypto`.
+
+Use a separate storage name for each bot when bots share a database, Redis database, or parent directory. The default session key is `chat:<id>`, so two bots in the same chat would otherwise use the same key. The examples use `great_bot`; replace it with a stable name for your bot. These names are explicit configuration, not values fetched from Telegram.
 
 ```ts
 // durable on Node (e.g. a webhook on one host)
 import { createSession } from "node-telegram-bot-api";
 import { FileSessionStorage } from "node-telegram-bot-api/node";
-bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.great_bot_sessions" }) }));
 
 // durable on Bun, shared across instances, idle sessions expiring after a day
 import { RedisSessionStorage } from "node-telegram-bot-api/bun";
-bot.use(createSession<Session>({ store: new RedisSessionStorage(), ttlSeconds: 86400 }));
+bot.use(createSession<Session>({
+  store: new RedisSessionStorage({ prefix: "great_bot:sessions:" }),
+  ttlSeconds: 86400,
+}));
+
+// SQL alternatives on Bun: a separate table or database file for this bot
+import { SqlSessionStorage, SqliteSessionStorage } from "node-telegram-bot-api/bun";
+const sqlStore = new SqlSessionStorage({ table: "great_bot_sessions" });
+const sqliteStore = new SqliteSessionStorage({ database: "./great_bot_sessions.db" });
+
+// durable on any runtime (Node 19+/Bun/edge), shared across instances, backed by S3 / R2 / MinIO
+import { S3SessionStorage } from "node-telegram-bot-api";
+bot.use(createSession<Session>({
+  store: new S3SessionStorage({
+    bucket: "great-bot",
+    region: "eu-west-1", // "auto" for R2
+    credentials: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+    // endpoint + forcePathStyle: true for R2 / MinIO / Spaces; prefix defaults to "sessions/"
+  }),
+}));
 ```
+
+`S3SessionStorage` has no per-object TTL (S3 has none); expire idle sessions with a bucket lifecycle rule on the prefix (whole-day granularity, measured from the last write) - keep it generous (30+ days), since the middleware skips the write when nothing changed. For temporary (STS / role) credentials, pass a `credentials` function that returns fresh `{ accessKeyId, secretAccessKey, sessionToken }` per request.
 
 Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the three methods. The `node-telegram-bot-api/bun` stores import Bun built-ins and are isolated behind that subpath - a Node or edge install never resolves them.
 
@@ -414,11 +461,13 @@ Any other backend (ioredis, `pg`, a KV service) is ~10 lines implementing the th
 A middleware may carry `init` / `close`; `bot.use` picks those up, `bot.init()` runs them once in registration order and `bot.close()` in reverse. Session middleware forwards both to its store, so setup (create the directory / table, open the pool) happens **at startup**, not lazily on update #1:
 
 ```ts
-bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.sessions" }) }));
+bot.use(createSession<Session>({ store: new FileSessionStorage({ path: "./.great_bot_sessions" }) }));
 await bot.init(); // optional: a bad path / unreachable backend fails here, at boot
 ```
 
 `startPolling()` and `handleUpdate()` await `bot.init()` themselves (memoized), so this is only about *when* a setup error surfaces - one raised during an update goes to the `bot.catch()` boundary like any other. `run()` (`/node`) calls `bot.close()` on shutdown, and `close()` drops the setup memo so a later `init()` starts over. A store that owned the connection it closed (`SqlSessionStorage` with a `url`, `SqliteSessionStorage` with a path) is spent after that - construct a new one; with a caller-supplied client the store stays usable.
+
+`init()` also learns the bot's own `@username` (a single `getMe()`) so `bot.command(...)` can ignore commands addressed to another bot: in a group, `/start@your_bot` runs the handler, `/start@other_bot` falls through, and a bare `/start` always matches (the `@name` compare is case-insensitive; the command name stays case-sensitive). The identity is exposed as `bot.botInfo` and `ctx.me`.
 
 ## ⚠️ Errors
 

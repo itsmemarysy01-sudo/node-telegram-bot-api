@@ -2,7 +2,7 @@
  * 16 - Sessions: durable per-chat state + reply tracking.
  *
  * Handlers reach the state through `ctx.getSession<Session>()`: `.data` is the
- * bag, and the handle also carries `createdAt` / `updatedAt` / `delete()`. The
+ * bag, and the handle also carries `.ext()` / `delete()`. The
  * `<Session>` is a plain call-site generic - no global type augmentation; to fix
  * it once instead, keep the `createSession()` result and call its
  * `.get(ctx)`. The `store` is
@@ -21,7 +21,12 @@
  *
  * For a Bun deployment, swap the store for a Bun-native one - e.g.
  * `import { SqliteSessionStorage } from "node-telegram-bot-api/bun"` and
- * `new SqliteSessionStorage({ database: "./sessions.db" })`.
+ * `new SqliteSessionStorage({ database: "./great_bot_sessions.db" })`.
+ *
+ * Replace `great_bot` with a stable name for your bot. Use a separate directory
+ * or database file for each bot when they share a parent directory. Keep the
+ * same path across restarts to reuse saved sessions. If you ran an older copy
+ * of this example, keep its `./.sessions` path or move that directory first.
  *
  * Run: BOT_TOKEN=123:abc bun examples/16-sessions.ts
  */
@@ -39,7 +44,7 @@ const bot = new Bot(process.env.BOT_TOKEN!);
 // One durable session per chat (default key). Swap the store to change backend.
 bot.use(
   createSession<Session>({
-    store: new FileSessionStorage({ path: "./.sessions" }),
+    store: new FileSessionStorage({ path: "./.great_bot_sessions" }),
     initial: () => ({ edits: 0 }),
   }),
 );
@@ -84,4 +89,4 @@ bot.on("message", async (ctx, next) => {
   await ctx.reply(`Thanks ${data.name}! Saved ${data.email}. Send /me to see it, /start to redo.`);
 });
 
-await run(bot);
+await run(bot, { exitOnError: true });

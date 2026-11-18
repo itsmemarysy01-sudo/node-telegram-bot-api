@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 import { dirname, join } from "node:path";
 /**
- * CI edge-safety gate (ADR-009): the runtime-agnostic core (`src/core/**`) must
+ * CI edge-safety gate: the runtime-agnostic core (`src/core/**`) must
  * bundle for a browser/edge target with **zero** Node dependencies.
  *
  * Where `check-core-imports.mjs` reads the source statically, this check proves
@@ -74,7 +74,9 @@ const BUILTINS = new Set([
 
 /** True if `spec` resolves to a Node builtin, with or without the `node:` prefix. */
 function isNodeBuiltin(spec) {
-  if (spec.startsWith("node:")) return true;
+  if (spec.startsWith("node:")) {
+    return true;
+  }
   return BUILTINS.has(spec.split("/")[0]);
 }
 
@@ -113,11 +115,13 @@ const result = await Bun.build({
 });
 
 if (!result.success) {
-  for (const m of result.logs) console.error(String(m));
+  for (const m of result.logs) {
+    console.error(String(m));
+  }
   if (leaked.length > 0) {
     console.error(
       `\nFAIL: core pulls in Node builtin(s) [${[...new Set(leaked)].join(", ")}]; ` +
-        `it cannot bundle Node-free for the edge.`,
+        `it cannot bundle Node-free for the edge.`
     );
   } else {
     console.error("\nFAIL: core did not bundle for a browser/edge target.");
@@ -147,6 +151,6 @@ const kib = (totalBytes / 1024).toFixed(1);
 console.log(
   `OK: core bundled Node-free for target "browser" - ` +
     `${result.outputs.length} output(s), ${totalBytes} bytes (${kib} KiB); ` +
-    `no Node builtins reachable, no "node:" references survived.`,
+    `no Node builtins reachable, no "node:" references survived.`
 );
 process.exit(0);

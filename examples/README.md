@@ -14,16 +14,18 @@ relative `../src` paths.
 | [`05-webhook-nextjs.ts`](./05-webhook-nextjs.ts) | `nextAppWebhook` as an App Router `export const POST` | `app/api/telegram/route.ts` in a Next.js app (illustrative) |
 | [`06-keyboards.ts`](./06-keyboards.ts) | `InlineKeyboardBuilder`, `ReplyKeyboardBuilder`, `ctx.answerCallbackQuery` | `BOT_TOKEN=... bun examples/06-keyboards.ts` |
 | [`07-formatting.ts`](./07-formatting.ts) | `EntityBuilder` + `EntityType` + `json()`, sending entities | `BOT_TOKEN=... CHAT_ID=... bun examples/07-formatting.ts` |
-| [`08-uploads.ts`](./08-uploads.ts) | `InputFile`, `fromPath` (`/node`), `MediaGroupBuilder` | `BOT_TOKEN=... CHAT_ID=... bun examples/08-uploads.ts` |
+| [`08-uploads.ts`](./08-uploads.ts) | `InputFile`, `fromPath` (`/node`), `MediaGroupBuilder`, `sendLivePhoto` (uploaded still + short clip) | `BOT_TOKEN=... CHAT_ID=... bun examples/08-uploads.ts` |
 | [`09-middleware.ts`](./09-middleware.ts) | `bot.use` for timing, an in-memory session, and an allowlist auth gate | `BOT_TOKEN=... ALLOWED_USERS=111,222 bun examples/09-middleware.ts` |
 | [`10-resilience-ratelimit.ts`](./10-resilience-ratelimit.ts) | `maxRetries`/`retryBackoffMs`/`rateLimit`, branching on `TelegramApiError`/`NetworkError` | `BOT_TOKEN=... CHAT_ID=... bun examples/10-resilience-ratelimit.ts` |
 | [`11-longpoll-stream.ts`](./11-longpoll-stream.ts) | Consume `longPoll(api, opts, signal)` with `for await`, filter, stop via `AbortController` | `BOT_TOKEN=... bun examples/11-longpoll-stream.ts` |
-| [`12-conversation.ts`](./12-conversation.ts) | A multi-step conversation (name → age) via `ctx.state` + a per-chat step `Map` | `BOT_TOKEN=... bun examples/12-conversation.ts` |
+| [`12-conversation.ts`](./12-conversation.ts) | A spaceship launch flow with typed session states: name your ship, pick a planet, and launch | `BOT_TOKEN=... bun examples/12-conversation.ts` |
 | [`13-webhook-node-server.ts`](./13-webhook-node-server.ts) | `createWebhookServer` (`/node`): a raw `node:http` webhook server, no framework | `BOT_TOKEN=... WEBHOOK_SECRET=... PUBLIC_URL=https://... bun examples/13-webhook-node-server.ts` |
-| [`14-photo-video-livephoto.ts`](./14-photo-video-livephoto.ts) | `sendPhoto`/`sendVideo`/`sendLivePhoto` uploading bytes only (`InputFile` + `fromPath` - no URLs, no `file_id`) | `BOT_TOKEN=... CHAT_ID=... bun examples/14-photo-video-livephoto.ts` |
 | [`15-rich-message.ts`](./15-rich-message.ts) | `RichMessageBuilder`, `RichTextBuilder`, `richMessageButton`/`richListItem`, `sendRichMessage` (blocks + `html` mode) | `BOT_TOKEN=... CHAT_ID=... bun examples/15-rich-message.ts` |
 | [`16-sessions.ts`](./16-sessions.ts) | `createSession()` + `session.get(ctx)`, durable `FileSessionStorage` (`/node`), `taggedReplies` for a name->email reply flow | `BOT_TOKEN=... bun examples/16-sessions.ts` |
 | [`17-callback-tracking.ts`](./17-callback-tracking.ts) | Routing button presses two ways: stateless `callback_data` paging, vs. `expectCallback`/`matchCallback(ctx, { once: true })` for an oversized, private, one-shot confirmation | `BOT_TOKEN=... bun examples/17-callback-tracking.ts` |
+| [`18-reply-tracking-lru.ts`](./18-reply-tracking-lru.ts) | Bounding the reply/press tables with a per-chat LRU: `createSession({ replyTracking: { maxEntriesPerChat, maxBytesPerChat, defaultTtlSeconds, slidingTtl } })`, evicting least-recently-used markers | `BOT_TOKEN=... bun examples/18-reply-tracking-lru.ts` |
+| [`19-widgets.ts`](./19-widgets.ts) | `sendWidget` with `allow_queries`: the page calls `TelegramWidget.request()`, the bot answers the `widget_query` with `answerWidgetQuery` and updates `chat_data` with `editMessageWidgetData` | `BOT_TOKEN=... bun examples/19-widgets.ts` |
+| [`20-ephemeral-replies.ts`](./20-ephemeral-replies.ts) | A button whose press gets an "Only visible to you" reply: `ephemeral_message_parameters.callback_query_id` without `chat_id`, then `answerCallbackQuery` | `BOT_TOKEN=... bun examples/20-ephemeral-replies.ts` |
 
 The framework webhook examples (03-05) target serverless/framework platforms and
 aren't standalone-runnable here, but they typecheck and show the exact wiring.
@@ -42,7 +44,7 @@ The examples import the **package name**, so the package must resolve. Either:
 - **Or just typecheck** them against the source (no build) via the path-mapped
   config - the bare-name imports are mapped onto `src/`:
   ```sh
-  ./node_modules/.bin/tsc -p examples/tsconfig.json --noEmit
+  npm run typecheck:examples
   ```
 
 ## Conventions

@@ -26,6 +26,7 @@ const DEFAULT_POLL_TIMEOUT = 30; // 30 seconds
 const DEFAULT_RETRY_DELAY = 1000; // 1 second, when the error carries no retry_after
 const DEFAULT_CONFLICT_RETRY_DELAY = 5000; // 5 seconds; the other poller needs time to exit
 const DEFAULT_MAX_CONFLICT_RETRIES = 10;
+const STOP_CONFIRM_TIMEOUT_MS = 5000; // bounds shutdown; Transport alone would retry 429s/timeouts for minutes
 
 const log = debug("polling");
 
@@ -35,65 +36,187 @@ function retryAfterMs(err: unknown): number | undefined {
   return seconds === undefined ? undefined : seconds * 1000;
 }
 
-/** Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts. */
-export async function* longPoll(api: Api, options: LongPollOptions = {}, signal?: AbortSignal): AsyncGenerator<Update> {
-  let offset = options.offset;
-  const timeout = options.timeout ?? DEFAULT_POLL_TIMEOUT;
-  const limit = options.limit;
-  const allowed = options.allowedUpdates;
-  const retry = options.retry ?? true;
-  const retryDelayMs = options.retryDelayMs ?? DEFAULT_RETRY_DELAY;
-  const conflictRetryDelayMs = options.conflictRetryDelayMs ?? DEFAULT_CONFLICT_RETRY_DELAY;
-  const maxConflictRetries = options.maxConflictRetries ?? DEFAULT_MAX_CONFLICT_RETRIES;
-  const onError = options.onError;
-  let conflicts = 0; // consecutive 409s; reset on any successful poll
+/** How the loop should react to a getUpdates error: `wait` ms before re-polling, plus the updated conflict count. */
+type RetryPlan = { wait: number; conflicts: number };
 
-  log("started (timeout=%ds)", timeout);
-  while (!signal?.aborted) {
-    let updates: Update[];
+/** Arguments to `planRetry` / `recover`: the error, the current conflict streak, the resolved retry options, and the signal. */
+type RetryContext = {
+  err: unknown;
+  conflicts: number;
+  retry: boolean;
+  retryDelayMs: number;
+  conflictRetryDelayMs: number;
+  maxConflictRetries: number;
+  onError?: (err: unknown) => void;
+  signal?: AbortSignal;
+};
+
+/** Decide how to handle a getUpdates failure. Throws the error to stop the loop
+ *  (non-retryable, or the conflict budget is exhausted); otherwise returns the
+ *  wait before re-polling and the new consecutive-conflict count. */
+function planRetry({
+  err,
+  conflicts,
+  retry,
+  retryDelayMs,
+  conflictRetryDelayMs,
+  maxConflictRetries,
+  onError,
+}: RetryContext): RetryPlan {
+  const pollConflict = isPollConflict(err);
+  if (!retry || !(isTransientError(err) || pollConflict)) {
+    throw err;
+  }
+  // A conflict advances its own bounded counter; any other transient breaks the streak.
+  const next = pollConflict ? conflicts + 1 : 0;
+  if (pollConflict && next > maxConflictRetries) {
+    throw err;
+  }
+  onError?.(err);
+  // A conflict waits its own longer delay; otherwise honor `retry_after`
+  // (e.g. a 429 flood-wait) when present, else the default delay.
+  const wait = pollConflict ? conflictRetryDelayMs : (retryAfterMs(err) ?? retryDelayMs);
+  log(
+    "getUpdates %s; retry in %dms",
+    pollConflict ? `conflict ${next}/${maxConflictRetries}` : "failed",
+    Math.round(wait)
+  );
+  return { wait, conflicts: next };
+}
+
+/** Recover from a getUpdates failure: wait `plan.wait` ms then resume with the new
+ *  conflict count, or `"stop"` the loop (the signal aborted, before or during the
+ *  wait). `planRetry` may throw here to stop the loop on a non-retryable error. */
+async function recover(ctx: RetryContext): Promise<{ conflicts: number } | "stop"> {
+  const { signal } = ctx;
+  if (signal?.aborted) {
+    return "stop"; // cancelled - swallow the abort error
+  }
+  const plan = planRetry(ctx);
+  try {
+    await delay(plan.wait, signal);
+  } catch {
+    return "stop"; // aborted during the wait
+  }
+  return { conflicts: plan.conflicts };
+}
+
+/** `LongPollOptions` with defaults applied, plus the loop's signal - fixed for the loop's lifetime. */
+type PollConfig = Omit<RetryContext, "err" | "conflicts"> & {
+  timeout: number;
+  limit?: number;
+  allowedUpdates?: string[];
+};
+
+function resolveConfig(options: LongPollOptions, signal: AbortSignal | undefined): PollConfig {
+  return {
+    timeout: options.timeout ?? DEFAULT_POLL_TIMEOUT,
+    limit: options.limit,
+    allowedUpdates: options.allowedUpdates,
+    retry: options.retry ?? true,
+    retryDelayMs: options.retryDelayMs ?? DEFAULT_RETRY_DELAY,
+    conflictRetryDelayMs: options.conflictRetryDelayMs ?? DEFAULT_CONFLICT_RETRY_DELAY,
+    maxConflictRetries: options.maxConflictRetries ?? DEFAULT_MAX_CONFLICT_RETRIES,
+    onError: options.onError,
+    signal,
+  };
+}
+
+/**
+ * Long-poll until a batch arrives, retrying transient failures at the same
+ * offset. Owns the consecutive-409 streak, which only spans failed polls (any
+ * answered poll returns, resetting it). `undefined` once the signal aborts;
+ * throws when the error is fatal.
+ */
+async function fetchBatch(
+  api: Api,
+  offset: number | undefined,
+  config: PollConfig
+): Promise<Update[] | undefined> {
+  let conflicts = 0;
+  while (!config.signal?.aborted) {
     try {
-      updates = await api.getUpdates(
+      return await api.getUpdates(
         {
           offset,
-          limit,
-          timeout,
-          allowed_updates: allowed,
+          limit: config.limit,
+          timeout: config.timeout,
+          allowed_updates: config.allowedUpdates,
         },
-        signal,
+        config.signal
       );
     } catch (err) {
-      // cancelled - swallow the abort error
-      if (signal?.aborted) return;
       // A 409 (another instance polling the same token) is transient for polling
       // but bounded, so an overlapping redeploy heals while a real two-instance
-      // deployment still surfaces. Everything else uses `isTransientError`.
-      const pollConflict = isPollConflict(err);
-      if (!retry || !(isTransientError(err) || pollConflict)) throw err;
-      if (pollConflict) {
-        if (++conflicts > maxConflictRetries) throw err;
-      } else {
-        conflicts = 0; // a non-conflict transient breaks the *consecutive*-conflict streak
+      // deployment still surfaces. `recover` throws for anything non-retryable.
+      const outcome = await recover({ ...config, err, conflicts });
+      if (outcome === "stop") {
+        return undefined;
       }
-      onError?.(err);
-      // A conflict waits its own longer delay; otherwise honor `retry_after`
-      // (e.g. a 429 flood-wait) when present, else the default delay.
-      const wait = pollConflict ? conflictRetryDelayMs : (retryAfterMs(err) ?? retryDelayMs);
-      log("getUpdates %s; retry in %dms", pollConflict ? `conflict ${conflicts}/${maxConflictRetries}` : "failed", Math.round(wait));
-      try {
-        await delay(wait, signal);
-      } catch {
-        // aborted during the wait
+      conflicts = outcome.conflicts;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * Best-effort final `getUpdates` on stop, so Telegram confirms the handled
+ * updates below `offset` (it confirms only via a later poll's offset). Skipped
+ * unless the loop was aborted - an error exit keeps fail-loud redelivery - and
+ * when the last answered poll already carried `offset`. Never throws.
+ */
+async function confirmOnStop(
+  api: Api,
+  signal: AbortSignal | undefined,
+  offset: number | undefined,
+  confirmed: number | undefined
+): Promise<void> {
+  if (!signal?.aborted || offset === undefined || offset === confirmed) {
+    return;
+  }
+  try {
+    await api.getUpdates(
+      { offset, limit: 1, timeout: 0 },
+      AbortSignal.timeout(STOP_CONFIRM_TIMEOUT_MS)
+    );
+    log("confirmed updates below %d on stop", offset);
+  } catch (err) {
+    log("failed to confirm updates below %d on stop: %s", offset, String(err));
+  }
+}
+
+/**
+ * Async-generator update source: long-polls `getUpdates` and yields each update
+ * until the signal aborts. An update counts as handled once the consumer asks
+ * for the next one; on abort, handled-but-unconfirmed updates are confirmed with
+ * one final poll (not on error exits, so fail-loud keeps redelivery).
+ */
+export async function* longPoll(
+  api: Api,
+  options: LongPollOptions = {},
+  signal?: AbortSignal
+): AsyncGenerator<Update> {
+  const config = resolveConfig(options, signal);
+  let offset = options.offset;
+  let confirmed = offset; // offset of the last poll Telegram answered
+
+  log("started (timeout=%ds)", config.timeout);
+  try {
+    while (!signal?.aborted) {
+      const updates = await fetchBatch(api, offset, config);
+      if (updates === undefined) {
         return;
       }
-      // retry WITHOUT advancing offset
-      continue;
+      confirmed = offset;
+      if (updates.length > 0) {
+        log("%d update(s)", updates.length);
+      }
+      for (const update of updates) {
+        yield update;
+        offset = update.update_id + 1;
+      }
     }
-
-    conflicts = 0; // a successful poll clears the conflict streak
-    if (updates.length > 0) log("%d update(s)", updates.length);
-    for (const update of updates) {
-      yield update;
-      offset = update.update_id + 1;
-    }
+  } finally {
+    await confirmOnStop(api, signal, offset, confirmed);
   }
 }

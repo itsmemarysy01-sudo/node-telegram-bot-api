@@ -1,10 +1,10 @@
 /**
- * Per-update Context (ADR-003).
+ * Per-update Context.
  *
  * Bundles the raw discriminated `update`, the shared `Api`, a mutable `state`
  * bag, and ergonomic shortcuts (`reply`, `answerCallbackQuery`) that infer the
  * chat/callback from the update. Typed accessors read each payload via
- * `"key" in update`, mirroring the discriminated-union shape (ADR-007), so they
+ * `"key" in update`, mirroring the discriminated-union shape, so they
  * return `T | undefined` without unsafe casts.
  */
 
@@ -68,7 +68,95 @@ const chatOf: { [K in UpdateType]: (u: Variant<K>) => Chat | undefined } = {
   managed_bot: () => undefined,
   subscription: () => undefined,
   stopped_message_generation: (u) => u.stopped_message_generation.chat,
+  widget_query: (u) => u.widget_query.chat,
+  // A shared widget was forwarded elsewhere; the query names no chat.
+  shared_widget_query: () => undefined,
 };
+
+/**
+ * The slice of the incoming message `ctx.reply` copies routing context from.
+ * Both `InaccessibleMessage` (a callback button on a message the bot can no
+ * longer read) and `BusinessMessagesDeleted` satisfy it structurally, so they
+ * need no casts - they simply carry none (or only some) of the optional fields.
+ */
+type ReplySource = Pick<
+  Message,
+  | "chat"
+  | "business_connection_id"
+  | "message_thread_id"
+  | "is_topic_message"
+  | "direct_messages_topic"
+>;
+
+/**
+ * Exhaustive per-variant resolver for the message `ctx.reply` answers - the
+ * peer of {@link chatOf}. A row returns the payload whose business connection /
+ * forum topic / direct-messages topic the reply must stay in, or `undefined`
+ * when the variant has no such message (the reply then targets the bare chat).
+ * `guest_message` resolves to `undefined` because `ctx.reply` refuses it outright:
+ * guest chats are answered via `answerGuestQuery`, not `sendMessage`.
+ */
+const replySourceOf: { [K in UpdateType]: (u: Variant<K>) => ReplySource | undefined } = {
+  message: (u) => u.message,
+  edited_message: (u) => u.edited_message,
+  channel_post: (u) => u.channel_post,
+  edited_channel_post: (u) => u.edited_channel_post,
+  business_connection: () => undefined,
+  business_message: (u) => u.business_message,
+  edited_business_message: (u) => u.edited_business_message,
+  deleted_business_messages: (u) => u.deleted_business_messages,
+  guest_message: () => undefined,
+  message_reaction: () => undefined,
+  message_reaction_count: () => undefined,
+  inline_query: () => undefined,
+  chosen_inline_result: () => undefined,
+  callback_query: (u) => u.callback_query.message,
+  shipping_query: () => undefined,
+  pre_checkout_query: () => undefined,
+  purchased_paid_media: () => undefined,
+  poll: () => undefined,
+  poll_answer: () => undefined,
+  my_chat_member: () => undefined,
+  chat_member: () => undefined,
+  chat_join_request: () => undefined,
+  chat_boost: () => undefined,
+  removed_chat_boost: () => undefined,
+  managed_bot: () => undefined,
+  subscription: () => undefined,
+  stopped_message_generation: () => undefined,
+  widget_query: () => undefined,
+  shared_widget_query: () => undefined,
+};
+
+/** The routing params `ctx.reply` infers from the incoming message. */
+type ReplyRouting = Pick<
+  SendMessageParams,
+  "business_connection_id" | "message_thread_id" | "direct_messages_topic_id"
+>;
+
+/**
+ * Derive the routing params for a reply to `src`. Keys are only set when the
+ * source carries them, so a plain-chat reply stays `{ chat_id, text }`.
+ * `message_thread_id` is copied only for real forum topics (`is_topic_message`):
+ * outside a topic it can name a reply/comment thread, which a reply must not
+ * be forced into.
+ */
+function replyRouting(src: ReplySource | undefined): ReplyRouting {
+  const routing: ReplyRouting = {};
+  if (!src) {
+    return routing;
+  }
+  if (src.business_connection_id !== undefined) {
+    routing.business_connection_id = src.business_connection_id;
+  }
+  if (src.is_topic_message && src.message_thread_id !== undefined) {
+    routing.message_thread_id = src.message_thread_id;
+  }
+  if (src.direct_messages_topic !== undefined) {
+    routing.direct_messages_topic_id = src.direct_messages_topic.topic_id;
+  }
+  return routing;
+}
 
 /**
  * Exhaustive per-variant `from` resolver - the peer of {@link chatOf}, for the
@@ -108,6 +196,8 @@ const fromOf: { [K in UpdateType]: (u: Variant<K>) => User | undefined } = {
   subscription: (u) => u.subscription.user,
   // MessageGenerationStopped carries only a chat, no acting user.
   stopped_message_generation: () => undefined,
+  widget_query: (u) => u.widget_query.from,
+  shared_widget_query: (u) => u.shared_widget_query.from,
 };
 
 /**
@@ -116,7 +206,10 @@ const fromOf: { [K in UpdateType]: (u: Variant<K>) => User | undefined } = {
  * is the single controlled bridge from the per-row narrowed type to a uniform
  * `(u: Update) => R` (TS can't track the narrowing through the loop variable).
  */
-function resolve<K extends UpdateType, R>(update: Update, table: { [P in K]: (u: Variant<P>) => R }): R | undefined {
+function resolve<K extends UpdateType, R>(
+  update: Update,
+  table: { [P in K]: (u: Variant<P>) => R }
+): R | undefined {
   for (const k of UPDATE_TYPES) {
     if (k in update) {
       return (table as Record<UpdateType, (u: Update) => R>)[k](update);
@@ -133,9 +226,18 @@ export class Context {
   /** Set by `command()` (args string) / `hears()` (string or RegExpMatchArray). */
   match?: string | RegExpMatchArray;
 
-  constructor(update: Update, api: Api) {
+  /**
+   * Provider for {@link Context.me}. A function (not a captured value) so the
+   * `Context` is decoupled from `Bot` and reads whatever identity the bot has
+   * learned by the time a handler asks - the bot may only fetch it during
+   * `init()`, after the `Context` was constructed.
+   */
+  private readonly meProvider?: () => User | undefined;
+
+  constructor(update: Update, api: Api, me?: () => User | undefined) {
     this.update = update;
     this.api = api;
+    this.meProvider = me;
   }
 
   // --- typed payload accessors ------------------------------------------------
@@ -187,18 +289,52 @@ export class Context {
     return this.chat?.id;
   }
 
+  /**
+   * This bot's own identity (`bot.botInfo`), or `undefined` when the bot has
+   * not learned it: no `command()` was registered (so `getMe()` never ran), or
+   * `init()` has not completed yet.
+   */
+  get me(): User | undefined {
+    return this.meProvider?.();
+  }
+
   // --- shortcuts --------------------------------------------------------------
 
   /**
-   * Send a message to the inferred chat. Throws if no chat id can be derived
-   * from the update (e.g. an inline query carries no chat).
+   * Send a message to the inferred chat, staying where the incoming message
+   * came from: `business_connection_id` for business messages (including
+   * `deleted_business_messages`), `message_thread_id` for forum-topic messages
+   * (`is_topic_message`; a plain reply thread is not followed), and
+   * `direct_messages_topic_id` for channel direct-messages chats. For a callback
+   * query these come from the message the button is attached to. Anything in
+   * `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.
+   *
+   * Throws if no chat id can be derived from the update (e.g. an inline query
+   * carries no chat) unless `other` makes it an ephemeral reply to a callback
+   * query, and for `guest_message`, which must be answered with
+   * `api.answerGuestQuery` and its `guest_query_id` instead.
    */
-  reply(text: string, other?: Omit<SendMessageParams, "chat_id" | "text">): Promise<SendMessageResult> {
+  reply(
+    text: string,
+    other?: Omit<SendMessageParams, "chat_id" | "text">
+  ): Promise<SendMessageResult> {
+    if ("guest_message" in this.update) {
+      throw new Error(
+        "ctx.reply: guest messages cannot be answered with sendMessage; use api.answerGuestQuery with message.guest_query_id"
+      );
+    }
     const chatId = this.chatId;
     if (chatId === undefined) {
+      // An ephemeral reply to a callback query needs no chat (e.g. a button on an
+      // inline message, whose callback query carries no chat).
+      const ephemeral = other?.ephemeral_message_parameters;
+      if (ephemeral && ephemeral.receiver_user_id === undefined) {
+        return this.api.sendMessage({ text, ...other, ephemeral_message_parameters: ephemeral });
+      }
       throw new Error("ctx.reply: cannot infer a chat id from this update");
     }
-    return this.api.sendMessage({ chat_id: chatId, text, ...other });
+    const routing = replyRouting(resolve(this.update, replySourceOf));
+    return this.api.sendMessage({ chat_id: chatId, text, ...routing, ...other });
   }
 
   /**
@@ -206,7 +342,7 @@ export class Context {
    * is not a callback query.
    */
   answerCallbackQuery(
-    other?: Omit<AnswerCallbackQueryParams, "callback_query_id">,
+    other?: Omit<AnswerCallbackQueryParams, "callback_query_id">
   ): Promise<AnswerCallbackQueryResult> {
     const cq = this.callbackQuery;
     if (!cq) {
@@ -217,8 +353,8 @@ export class Context {
 
   /**
    * The session handle for this update: `.data` (the persistent bag - mutate it
-   * in place or reassign it, it flushes after the handler), `.createdAt` /
-   * `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()` to
+   * in place or reassign it, it flushes after the handler), `.ext()` for layers
+   * built on sessions, and `.delete()` to
    * evict the key. `<T>` is the caller's asserted `data` shape, defaulting to
    * `Record<string, unknown>` like `createSession()` itself; to fix it once
    * instead of per call site, use the middleware's own `.get(ctx)`.
@@ -228,7 +364,9 @@ export class Context {
   getSession<T = Record<string, unknown>>(): SessionHandle<T> {
     const handle = this.state[SESSION_STATE_KEY];
     if (handle === undefined) {
-      throw new Error("ctx.getSession: no session for this update (session middleware not installed, or no key)");
+      throw new Error(
+        "ctx.getSession: no session for this update (session middleware not installed, or no key)"
+      );
     }
     return handle as SessionHandle<T>;
   }

@@ -5,6 +5,240 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [Unreleased][Unreleased]
 
+## [2.4.0][2.4.0] - 2026-11-09
+
+### Bot API 10.4 (November 9, 2026)
+
+#### Widgets
+
+- Added `sendWidget`, `sendSharedWidget`, `answerWidgetQuery`, `editMessageWidgetData`,
+  and `editSharedWidgetData`.
+- Added `Widget` and `widget` on `Message` and `ExternalReplyInfo`.
+- Added `WidgetQuery`/`SharedWidgetQuery` and the `widget_query`/`shared_widget_query`
+  update types, plus `WidgetQueryType` (`WidgetQueryTypeData`, `WidgetQueryTypeSignData`,
+  `WidgetQueryTypeSentTransaction`) and `WidgetQueryWallet`.
+- Added `InputWidgetMessageContent` and `InputSharedWidgetMessageContent`.
+- `ctx.chat`/`ctx.from` resolve for widget queries (`shared_widget_query` has no chat).
+
+#### Ephemeral Messages
+
+- `chat_id` in the ephemeral-capable send methods and `receiver_user_id` in
+  `EphemeralMessageParameters` are now optional, so `callback_query_id` alone sends an
+  ephemeral reply to a callback query (in any chat except channel direct-messages chats).
+- Types are stricter than the "Optional" columns in the Bot API docs, to catch at
+  compile time what Telegram rejects at runtime:
+  - A call to one of these methods without `chat_id` is a type error unless it is an
+    ephemeral reply to a callback query (`callback_query_id` without
+    `receiver_user_id`). The rule is the exported `ChatOrCallbackReply` type.
+  - `EphemeralMessageParameters` must have `receiver_user_id` or `callback_query_id`.
+    The callback-reply form is the exported `EphemeralCallbackReply` type.
+  - `Omit` and `Pick` merge the members of these param types, so a wrapper such as
+    `Omit<SendMessageParams, "parse_mode">` loses the rule and its spread is rejected.
+    Use the exported `DistributiveOmit<SendMessageParams, "parse_mode">`.
+    `Omit<SendMessageParams, "chat_id">` plus your own `chat_id` works as before.
+    `interface X extends SendMessageParams` no longer compiles; use a `type` intersection.
+- `ctx.reply` on an update without a chat (e.g. a callback query from an inline message)
+  sends when `other` makes it an ephemeral reply to the callback query, instead of throwing.
+
+#### Quotes from rich messages
+
+- Added `rich_texts` to `TextQuote` and `quote_rich_texts` to `ReplyParameters`.
+
+#### TON wallet
+
+- Added `TonWalletCard`, `TonWalletCardSticker`, `TonNft`, `TonNftAttribute`, and
+  `ChatFullInfo.ton_wallet_card`.
+- Added `TonWalletTransfer` and `Message.ton_wallet_transfer`.
+- Renamed `StoryAreaPosition` to `AreaPosition`, following the Bot API.
+  `StoryAreaPosition` stays as a deprecated alias.
+
+#### Chat share themes
+
+- Added `ChatShareTheme` (`ChatShareThemeEmoji`, `ChatShareThemeUniqueGift`),
+  `ChatFullInfo.share_theme`, and `EmojiType` (`EmojiTypeEmoji`, `EmojiTypeCustomEmoji`).
+- Added `ChatShareThemeBackdrop`, `ChatShareThemeBackdrops`, and
+  `getChatShareThemeBackdrops`.
+
+#### Gifts
+
+- Added `getUniqueGift` and `deleteBusinessAccountGift`.
+
+#### General
+
+- Added `RichTextTonAddress` (with `RichTextBuilder.tonAddress()`) and the
+  `ton_address`/`bank_card_number` entity types (with `EntityType.TonAddress` /
+  `EntityType.BankCardNumber`). `EntityType` also gains the previously missing
+  `DateTime`.
+- Added `custom_description_parse_mode` and `custom_description_entities` to
+  `verifyUser` and `verifyChat`.
+- Added `PaidMessagesWaived` and `Message.paid_messages_waived`.
+
+### Rate limiting
+
+- `rateLimit: { global, perChat }` now takes the global and the per-chat token together,
+  once both are available. Before, a request queued behind a busy chat spent its global
+  token while it waited, so a chat backlog could later push sends over the global cap
+  (#1390). Neither token is spent while a request waits on the other, and an aborted
+  wait spends neither.
+- Added `TokenBucket.takeAll(buckets, signal?)`, which takes one token from each bucket
+  once all of them have one.
+
+## [2.3.0][2.3.0] - 2026-11-04
+
+Stable release of the `2.3.0` line. It includes everything from
+`2.3.0-rc0` and `2.3.0-rc1` (see below), plus the following changes.
+
+### Polling
+
+- Stopping the polling loop (`bot.stop()`, or SIGINT/SIGTERM via `run()`) while
+  a handler runs no longer leaves that update unconfirmed (#1385). Telegram only
+  confirms updates when a later `getUpdates` carries their offset, and the loop
+  used to exit before sending it, so the handled update was redelivered on the
+  next start and non-idempotent handlers ran twice. On abort, `longPoll` now
+  sends one final `getUpdates({ offset, limit: 1, timeout: 0 })` (best effort,
+  capped at 5s) for updates that were handled but not yet confirmed. Updates the
+  loop never handled - the rest of a batch - are still redelivered, and the
+  update whose `bot.catch()` throws (fail-loud) is never confirmed.
+
+### Dispatch
+
+- `ctx.reply()` now answers where the incoming message came from instead of
+  the bare chat (#1386). It fills `business_connection_id` for
+  `business_message`, `edited_business_message` and `deleted_business_messages`
+  (previously the bot replied as itself, and got a 403 if the customer never
+  started it); `message_thread_id` for forum-topic messages, only when
+  `is_topic_message` is set (previously the reply landed in General; a plain
+  reply/comment thread is still not followed); and `direct_messages_topic_id`
+  for channel direct-messages chats, where it is required. For a callback query
+  the values come from the message the button is attached to. Options passed
+  in `other` still take precedence; pass `undefined` for a key to opt out.
+- `ctx.reply()` now throws for `guest_message` updates, pointing to
+  `api.answerGuestQuery` with the message's `guest_query_id`: a guest bot is
+  not a member of the chat, so `sendMessage` there can never reach it.
+
+## [2.3.0-rc1][2.3.0-rc1] - 2026-11-03
+
+### Dispatch
+
+- `bot.command(name, ...)` now ignores commands addressed to another bot: in a
+  group, `/start@some_bot` runs the handler only when `@some_bot` is this bot's
+  own username (compared case-insensitively, as Telegram usernames are);
+  `/start@other_bot` falls through to downstream middleware, and a bare `/start`
+  still always matches. The command name itself stays case-sensitive. To make
+  the comparison, the bot learns its own `@username` via `getMe()`, called once
+  inside `bot.init()` and kept for the process lifetime (a bot's username is
+  permanent, so there is no refresh). The bot's identity is exposed as
+  `bot.botInfo` (`User | undefined`) and to handlers as `ctx.me`.
+
+## [2.3.0-rc0][2.3.0-rc0] - 2026-11-03
+
+### Session storage
+
+- Added `S3SessionStorage` (exported from the core `node-telegram-bot-api`): a
+  durable, cross-instance session backend for any S3-compatible object store
+  (AWS S3, Cloudflare R2, MinIO, DigitalOcean Spaces), speaking the S3 REST API
+  directly over `fetch` with AWS Signature V4 signing. Core and runtime-agnostic
+  (Node 19+, Bun, Deno, Workers, edge); `fetch` and `crypto` are injectable, so
+  Node 18 can supply `node:crypto`'s `webcrypto`. It has no per-object TTL - use
+  a bucket lifecycle rule on the prefix. Validated against the AWS SigV4 example
+  vector, the `aws4` reference signer, and live MinIO / RustFS / Bun S3 servers.
+
+### Uploads
+
+- `InputFile` uploads no longer throw `ReferenceError: crypto is not defined` on
+  Node 18: the multipart boundary is now built without the global WebCrypto
+  (which Node exposes unflagged only from v19), so uploads work across the full
+  supported Node 18.2+ range (#1378).
+
+## [2.2.0][2.2.0] - 2026-11-02
+
+Stable release of the `2.2.0` line. It includes everything from
+`2.2.0-rc0`, `2.2.0-rc1` and `2.2.0-rc2` (see below), plus the following changes.
+
+### Types
+
+- `reply_markup` now takes exactly one reply-markup object: an object that mixes
+  them (e.g. `inline_keyboard` + `keyboard`) is a type error, because Telegram uses
+  only one per message. The 18 methods that accept all four objects now use the
+  exported `ReplyMarkup` type. Type-only change; the wire format is unchanged (#1374).
+
+### Dispatch
+
+- `bot.hears()` now resets `lastIndex` on a sticky (`/y`) RegExp trigger before
+  matching, so the trigger no longer fails on every other message (#1375).
+
+### Maintenance
+
+- e2e: fail fast against a local Bot API emulator to speed up the suite (#1371).
+- Examples: added a typed-sessions example with a spaceship launch flow (#1369).
+- Docs: used bot-specific storage names in the session examples (#1368).
+
+## [2.2.0-rc2][2.2.0-rc2] - 2026-09-07
+
+### Reply and callback tracking
+
+- Renamed the reply-tracking size budgets to denote their scope:
+  `replyTracking.maxEntries` -> `maxEntriesPerChat` and `maxBytes` ->
+  `maxBytesPerChat` (each bounds one session key's tables, per chat with the
+  default key). Breaking rename within the `2.2.0` prerelease line; the old names
+  shipped only in `2.2.0-rc1`.
+
+### Maintenance
+
+- Simplified core functions and added Biome formatting and complexity checks to CI
+  (#1364, #1365).
+- Removed obsolete v2 migration references, corrected file attachment and
+  serialization comments, and regenerated the API reference (#1366).
+
+## [2.2.0-rc1][2.2.0-rc1] - 2026-09-07
+
+### Long polling
+
+- A `409 Conflict` is now treated as a recoverable poll error instead of
+  permanently stopping the loop (#1350). Added `LongPollOptions.conflictRetryDelayMs`
+  (default 5000ms) and `maxConflictRetries` (default 10) - after that many
+  consecutive conflicts (a genuine two-instance deploy) the loop throws. The
+  existing `retry` toggle now also governs 409s. Added the public `isPollConflict()`
+  predicate and the `HTTP_STATUS_CONFLICT` constant.
+
+### Transport
+
+- An empty or whitespace-only `apiRoot` now falls back to the default API root
+  instead of being used verbatim (which produced malformed request URLs) (#1354).
+
+### Node helpers
+
+- `run()` gained an opt-in `exitOnError` (default `false`): when a polling pump
+  fails fatally, the process exits non-zero after teardown instead of staying
+  alive and silent, so a supervisor can restart it (#1351).
+- `RedisSessionStorage` now owns and closes a client it constructs from a `url`,
+  via a `createClient` seam (#1351).
+
+### Reply and callback tracking
+
+- Added an opt-in per-chat **LRU bound** on the reply/press tables, configured on
+  the session: `createSession({ store, replyTracking: { maxEntries, maxBytes,
+  defaultTtlSeconds, slidingTtl } })`. `ttlSeconds` caps a marker's age but not the
+  table's size, so a chat that fires many short-lived keyboards could still grow
+  its envelope between prunes (#1357).
+- `maxEntries` / `maxBytes` cap the tables (combined across replies and presses),
+  evicting the **least-recently-used** markers once a budget is exceeded - recency,
+  not age, so an actively-pressed old keyboard outlives an idle newer one; a match
+  refreshes recency, not just a record. `defaultTtlSeconds` gives every expectation
+  a TTL, and `slidingTtl` re-arms it on use.
+- All fields are optional; with no `replyTracking` the tables stay unbounded, as
+  before. Recency metadata (`lastUsedAt`) is written only when a size budget
+  (`maxEntries` / `maxBytes`) is set, so configs without one keep byte-identical
+  envelopes.
+- Added the example `examples/18-reply-tracking-lru.ts`.
+
+### Sessions
+
+- Dropped the `createdAt` / `updatedAt` envelope timestamps (and the `now` clock
+  option that fed them): nothing read them, and slimming the envelope directly
+  serves the growth the LRU bound targets. Stale timestamp fields on already-stored
+  rows fall out on the next write. (These shipped only in `2.2.0-rc0`.)
+
 ## [2.2.0-rc0][2.2.0-rc0] - 2026-09-03
 
 ### Sessions
@@ -1197,4 +1431,11 @@ Fixed:
 [2.0.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.0.0
 [2.1.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.1.0
 [2.2.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc0
-[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.2.0-rc0...master
+[2.2.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc1
+[2.2.0-rc2]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0-rc2
+[2.2.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.2.0
+[2.3.0-rc0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc0
+[2.3.0-rc1]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0-rc1
+[2.3.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.3.0
+[2.4.0]:https://github.com/yagop/node-telegram-bot-api/releases/tag/v2.4.0
+[Unreleased]:https://github.com/yagop/node-telegram-bot-api/compare/v2.4.0...master

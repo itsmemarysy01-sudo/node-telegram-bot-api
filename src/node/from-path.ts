@@ -1,5 +1,5 @@
 /**
- * `fromPath` - wrap a local file as an `InputFile` (ADR-006, §6.4).
+ * `fromPath` - wrap a local file as an `InputFile`.
  *
  * The sole Node-only file-input helper. The core `InputFile` wraps web-standard
  * data only (no `fs`, no path-guessing), so reading from disk lives here, under
@@ -23,7 +23,10 @@ import { InputFile } from "../core/files.js";
  * the file for each transport retry. The default filename is the path's
  * basename; pass `meta.filename` / `meta.contentType` to override.
  */
-export async function fromPath(path: string, meta?: { filename?: string; contentType?: string }): Promise<InputFile> {
+export async function fromPath(
+  path: string,
+  meta?: { filename?: string; contentType?: string }
+): Promise<InputFile> {
   await stat(path); // surface a missing/unreadable path here, not mid-request
   const open = () => Readable.toWeb(createReadStream(path)) as ReadableStream<Uint8Array>;
   return new InputFile(open, {

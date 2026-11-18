@@ -1,5 +1,5 @@
 /**
- * Bot - the composition root (ADR-003, ADR-004, ADR-005).
+ * Bot - the composition root.
  *
  * Holds the single `Api`, an ordered middleware list, and an error boundary
  * (default: log and continue; see `catch`). `use`/`on`/`command`/`hears` all
@@ -13,7 +13,7 @@
  * webhooks are mutually exclusive and webhook serving stays out of edge-neutral core.
  */
 
-import type { Update, UpdateType } from "../types/index.js";
+import type { Update, UpdateType, User } from "../types/index.js";
 import { Api } from "./api.js";
 import { compose, type Middleware } from "./compose.js";
 import { Context } from "./context.js";
@@ -63,8 +63,25 @@ export class Bot {
   private controller?: AbortController;
   private running = false;
 
+  /**
+   * This bot's own `User`, fetched once by `getMe()` in `init()` and kept for
+   * the process lifetime (a bot's username is permanent, so there is no
+   * refresh). `undefined` only until `init()` has run.
+   */
+  private ownUser?: User;
+
   constructor(token: string, options?: BotOptions) {
     this.api = new Api(token, options);
+  }
+
+  /**
+   * This bot's own identity, as returned by `getMe()` and kept for the process
+   * lifetime. `undefined` only before `init()` has run; once the bot is serving
+   * updates (polling or webhook) it is always a full `User`, and is also exposed
+   * to handlers as `ctx.me`.
+   */
+  get botInfo(): User | undefined {
+    return this.ownUser;
   }
 
   /**
@@ -88,10 +105,14 @@ export class Bot {
   private register(mw: ReadonlyArray<Middleware<Context>>): void {
     for (const fn of mw) {
       const plugin = fn as Middleware<Context> & MiddlewarePlugin;
-      if (typeof plugin.init !== "function" && typeof plugin.close !== "function") continue;
+      if (typeof plugin.init !== "function" && typeof plugin.close !== "function") {
+        continue;
+      }
       // The same middleware can reach us twice (`bot.use(session)` and then
       // `bot.on(..., session)`); it is one resource, so it gets one lifecycle.
-      if (!this.plugins.includes(plugin)) this.plugins.push(plugin);
+      if (!this.plugins.includes(plugin)) {
+        this.plugins.push(plugin);
+      }
     }
   }
 
@@ -109,8 +130,18 @@ export class Bot {
   init(): Promise<void> {
     if (this.started === undefined) {
       this.started = (async () => {
+        // Learn our own identity once, for the command() `@name` compare and
+        // for `botInfo` / `ctx.me`. A bot's username is permanent, so it is
+        // fetched once and kept, with no TTL or refresh. A failure is not
+        // retained (it escapes this memoized promise and is cleared below), so
+        // the next call retries.
+        if (this.ownUser === undefined) {
+          this.ownUser = await this.api.getMe();
+        }
         for (const plugin of this.plugins) {
-          if (this.initialized.has(plugin)) continue;
+          if (this.initialized.has(plugin)) {
+            continue;
+          }
           await plugin.init?.();
           // Marked only on success: a plugin that threw never finished opening,
           // so `close()` must not try to close it.
@@ -147,7 +178,9 @@ export class Bot {
         // Skip what never initialized; unmark before closing, so that even a
         // failed teardown leaves the plugin eligible for a later init() rather
         // than stranded as "open" forever.
-        if (!this.initialized.delete(plugin)) continue;
+        if (!this.initialized.delete(plugin)) {
+          continue;
+        }
         try {
           await plugin.close?.();
         } catch (err) {
@@ -161,7 +194,9 @@ export class Bot {
       // init() from ever running setup again.
       this.started = undefined;
     }
-    if (failures.length === 1) throw failures[0];
+    if (failures.length === 1) {
+      throw failures[0];
+    }
     if (failures.length > 1) {
       throw new AggregateError(failures, "Bot.close: some middleware failed to close");
     }
@@ -192,9 +227,24 @@ export class Bot {
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text ?? ctx.channelPost?.text;
-      if (text === undefined) return next();
+      if (text === undefined) {
+        return next();
+      }
       const m = re.exec(text);
-      if (!m) return next();
+      if (!m) {
+        return next();
+      }
+      // A command addressed to a specific bot (`/cmd@name`) runs only when the
+      // `@name` is ours (Telegram usernames are case-insensitive). If we do not
+      // yet know our own username, we cannot claim it, so we fall through. A
+      // bare `/cmd` (no suffix) always matches.
+      const addressed = m[2];
+      if (addressed !== undefined) {
+        const target = addressed.slice(1).toLowerCase();
+        if (target !== this.ownUser?.username?.toLowerCase()) {
+          return next();
+        }
+      }
       ctx.match = m[3] ?? "";
       return run(ctx, next);
     });
@@ -205,28 +255,24 @@ export class Bot {
    * a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the
    * `RegExpMatchArray`).
    */
-  hears(trigger: string | RegExp | Array<string | RegExp>, ...handlers: Middleware<Context>[]): this {
+  hears(
+    trigger: string | RegExp | Array<string | RegExp>,
+    ...handlers: Middleware<Context>[]
+  ): this {
     const triggers = Array.isArray(trigger) ? trigger : [trigger];
     this.register(handlers);
     const run = compose(handlers) satisfies Composed;
     return this.use((ctx, next) => {
       const text = ctx.message?.text;
-      if (text === undefined) return next();
-      for (const t of triggers) {
-        if (typeof t === "string") {
-          if (text === t) {
-            ctx.match = text;
-            return run(ctx, next);
-          }
-        } else {
-          const m = text.match(t);
-          if (m) {
-            ctx.match = m;
-            return run(ctx, next);
-          }
-        }
+      if (text === undefined) {
+        return next();
       }
-      return next();
+      const m = matchTriggers(text, triggers);
+      if (m === null) {
+        return next();
+      }
+      ctx.match = m;
+      return run(ctx, next);
     });
   }
 
@@ -248,7 +294,7 @@ export class Bot {
    * itself throws.
    */
   async handleUpdate(update: Update): Promise<void> {
-    const ctx = new Context(update, this.api);
+    const ctx = new Context(update, this.api, () => this.ownUser);
     try {
       await this.init(); // memoized; a no-op once startup has run
       await compose(this.middleware)(ctx, () => Promise.resolve());
@@ -274,7 +320,9 @@ export class Bot {
    */
   async startPolling(source?: AsyncIterable<Update>, options?: LongPollOptions): Promise<void> {
     if (this.running) {
-      throw new Error("startPolling is already running; call stop() and await the previous run first");
+      throw new Error(
+        "startPolling is already running; call stop() and await the previous run first"
+      );
     }
     const controller = new AbortController();
     this.controller = controller;
@@ -285,7 +333,9 @@ export class Bot {
       await this.init(); // fail fast on a bad store/plugin before the first poll
       const iterable = source ?? longPoll(this.api, options, controller.signal);
       for await (const update of iterable) {
-        if (controller.signal.aborted) break;
+        if (controller.signal.aborted) {
+          break;
+        }
         await this.handleUpdate(update);
       }
     } finally {
@@ -305,4 +355,32 @@ export class Bot {
 
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * The `ctx.match` value for the first `hears` trigger that matches `text`, or
+ * `null` when none do. A string trigger matches exactly (match value = the
+ * text); a RegExp matches via `text.match(re)` (match value = the
+ * `RegExpMatchArray`).
+ */
+function matchTriggers(
+  text: string,
+  triggers: ReadonlyArray<string | RegExp>
+): string | RegExpMatchArray | null {
+  for (const t of triggers) {
+    if (typeof t === "string") {
+      if (text === t) {
+        return text;
+      }
+    } else {
+      if (t.sticky) {
+        t.lastIndex = 0;
+      }
+      const m = text.match(t);
+      if (m) {
+        return m;
+      }
+    }
+  }
+  return null;
 }

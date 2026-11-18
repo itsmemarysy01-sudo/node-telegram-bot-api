@@ -1,5 +1,5 @@
 /**
- * Request encoding (ADR-002, ADR-010, ADR-011) - the library serializes nothing.
+ * Request encoding - consumes parameters already serialized by `serializeParams`.
  *
  * `encodeForm` consumes the wire-ready record `serializeParams` produced (every
  * value is a `WireValue`) and splits it per field: collect an `InputFile` as a
@@ -40,14 +40,15 @@ export interface EncodedRequest {
 export async function encodeForm(
   fields: Record<string, WireValue>,
   // Test seam: force the buffered-Blob fallback a streaming runtime never takes.
-  streaming: boolean = supportsRequestStreams(),
+  streaming: boolean = supportsRequestStreams()
 ): Promise<EncodedRequest> {
   const strings: Array<[string, string]> = [];
   const files: Array<readonly [string, InputFile]> = [];
 
   for (const [key, value] of Object.entries(fields)) {
-    if (isInputFile(value)) files.push([key, value]);
-    else if (isFormPart(value)) {
+    if (isInputFile(value)) {
+      files.push([key, value]);
+    } else if (isFormPart(value)) {
       strings.push([key, value.json]);
       files.push(...value.files);
     } else {
@@ -69,7 +70,9 @@ export async function encodeForm(
 
   const { boundary, pieces, replayable } = multipartBody(strings, files);
   const headers = { "content-type": `multipart/form-data; boundary=${boundary}` };
-  if (streaming) return { headers, body: () => streamBody(pieces), replayable };
+  if (streaming) {
+    return { headers, body: () => streamBody(pieces), replayable };
+  }
 
   // No request-body streaming on this runtime: buffer the same bytes once into
   // a Blob. A Blob re-reads for free, so the body is replayable even when a

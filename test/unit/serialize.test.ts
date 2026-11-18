@@ -4,6 +4,25 @@ import { type EncodedRequest, encodeForm } from "../../src/core/encode.js";
 import { InputFile } from "../../src/core/files.js";
 import { MediaGroupBuilder } from "../../src/core/media.js";
 import { serializeParams } from "../../src/core/serialize.js";
+import type {
+  DistributiveOmit,
+  EphemeralCallbackReply,
+  EphemeralMessageParameters,
+  SendAnimationParams,
+  SendAudioParams,
+  SendContactParams,
+  SendDocumentParams,
+  SendLivePhotoParams,
+  SendLocationParams,
+  SendMessageParams,
+  SendPhotoParams,
+  SendRichMessageParams,
+  SendStickerParams,
+  SendVenueParams,
+  SendVideoNoteParams,
+  SendVideoParams,
+  SendVoiceParams,
+} from "../../src/types/index.js";
 
 /** Plain params -> serializeParams -> encodeForm. */
 const enc = (p: Record<string, unknown>) => encodeForm(serializeParams(p));
@@ -122,5 +141,102 @@ describe("serializeParams", () => {
     );
     const fromLiteral = await parts(await enc({ chat_id: 1, media: [{ type: "photo", media: fileA(), caption: "A" }] }));
     assert.deepStrictEqual(JSON.parse(fromBuilder.get("media")!.value), JSON.parse(fromLiteral.get("media")!.value));
+  });
+});
+
+describe("reply_markup", () => {
+  const inline_keyboard = [[{ text: "A", callback_data: "a" }]];
+  const keyboard = [[{ text: "B" }]];
+
+  test("each ReplyMarkup shape is serialized as given", async () => {
+    const valid: SendMessageParams["reply_markup"][] = [
+      { inline_keyboard },
+      { inline_keyboard, force_reply: true },
+      { keyboard, is_persistent: true, force_reply: true },
+      { remove_keyboard: true, selective: true },
+      { force_reply: true, input_field_placeholder: "x" },
+    ];
+    for (const reply_markup of valid) {
+      const p = (await enc({ chat_id: 1, text: "hi", reply_markup })).body() as URLSearchParams;
+      assert.deepStrictEqual(JSON.parse(p.get("reply_markup")!), reply_markup);
+    }
+  });
+
+  // Checked by `npm run typecheck:test`: Telegram uses one reply markup per message (#1078).
+  test("mixing reply-markup objects is a type error", () => {
+    const mixed: SendMessageParams["reply_markup"][] = [
+      // @ts-expect-error inline keyboard + reply keyboard
+      { inline_keyboard, keyboard },
+      // @ts-expect-error inline keyboard + remove
+      { inline_keyboard, remove_keyboard: true },
+      // @ts-expect-error reply keyboard + remove
+      { keyboard, remove_keyboard: true },
+    ];
+    assert.strictEqual(mixed.length, 3);
+  });
+});
+
+// Checked by `npm run typecheck:test`: `chat_id` may be omitted only for an
+// ephemeral reply to a callback query, and ephemeral parameters must name a
+// receiver or a callback query.
+describe("chat_id on the ephemeral-capable send methods", () => {
+  test("a send without chat_id must be an ephemeral callback reply", () => {
+    const callbackReply: EphemeralMessageParameters = { callback_query_id: "q" };
+    const valid: SendMessageParams[] = [
+      { chat_id: 1, text: "hi" },
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: { receiver_user_id: 2 } },
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: { receiver_user_id: 2, callback_query_id: "q" } },
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: callbackReply },
+      { text: "hi", ephemeral_message_parameters: callbackReply },
+      { text: "hi", ephemeral_message_parameters: { callback_query_id: "q", replace_callback_query_message: true } },
+    ];
+    const invalid: SendMessageParams[] = [
+      // @ts-expect-error no chat_id
+      { text: "hi" },
+      // @ts-expect-error chat_id is undefined
+      { chat_id: undefined, text: "hi" },
+      // @ts-expect-error no chat_id and no callback_query_id
+      { text: "hi", ephemeral_message_parameters: { receiver_user_id: 2 } },
+      // @ts-expect-error receiver_user_id needs a chat_id
+      { text: "hi", ephemeral_message_parameters: { receiver_user_id: 2, callback_query_id: "q" } },
+      // @ts-expect-error ephemeral parameters without receiver_user_id and callback_query_id
+      { chat_id: 1, text: "hi", ephemeral_message_parameters: {} },
+    ];
+    assert.strictEqual(valid.length + invalid.length, 11);
+  });
+
+  test("the rule is on all 14 methods", () => {
+    type Strict<P> = P extends { chat_id: number | string } | { ephemeral_message_parameters: EphemeralCallbackReply }
+      ? true
+      : false;
+    // `false` joins the union (and fails the assignment) if a method lost the rule.
+    const all: Strict<
+      | SendMessageParams
+      | SendPhotoParams
+      | SendLivePhotoParams
+      | SendAudioParams
+      | SendDocumentParams
+      | SendVideoParams
+      | SendAnimationParams
+      | SendVoiceParams
+      | SendVideoNoteParams
+      | SendLocationParams
+      | SendVenueParams
+      | SendContactParams
+      | SendStickerParams
+      | SendRichMessageParams
+    > extends true
+      ? true
+      : never = true;
+    assert.ok(all);
+  });
+
+  test("wrappers keep the rule with a chat_id of their own or DistributiveOmit", () => {
+    const withChat = (p: Omit<SendMessageParams, "chat_id">): SendMessageParams => ({ ...p, chat_id: 1 });
+    const html = (p: DistributiveOmit<SendMessageParams, "parse_mode">): SendMessageParams => ({ ...p, parse_mode: "HTML" });
+    assert.deepStrictEqual(withChat({ text: "hi" }), { text: "hi", chat_id: 1 });
+    assert.deepStrictEqual(html({ chat_id: 1, text: "hi" }), { chat_id: 1, text: "hi", parse_mode: "HTML" });
+    // @ts-expect-error the wrapper still requires chat_id
+    html({ text: "hi" });
   });
 });

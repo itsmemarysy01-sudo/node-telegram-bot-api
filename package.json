@@ -1,6 +1,6 @@
 {
   "name": "node-telegram-bot-api",
-  "version": "2.2.0-rc0",
+  "version": "2.4.0",
   "description": "Telegram Bot API - runtime-agnostic TypeScript client (v2).",
   "type": "module",
   "main": "./dist/core/index.cjs",
@@ -79,8 +79,8 @@
     "lint:core": "node scripts/check-core-imports.mjs",
     "lint:bun-isolation": "node scripts/check-bun-isolation.mjs",
     "check:edge": "bun scripts/check-edge-bundle.mjs",
-    "format": "biome check --write --indent-style=space --line-width=120 ./src",
-    "check": "npm run typecheck && npm run typecheck:bun && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run lint:bun-isolation && npm run check:edge && npm test",
+    "lint:format": "biome check ./src ./scripts",
+    "check": "npm run typecheck && npm run typecheck:bun && npm run typecheck:test && npm run typecheck:examples && npm run lint:core && npm run lint:bun-isolation && npm run check:edge && npm run lint:format && npm test",
     "generate:types": "bun scripts/api-parser.ts",
     "prepublishOnly": "npm run build",
     "generate:docs": "bun scripts/generate-docs.ts"
@@ -97,8 +97,8 @@
     "bun": "^1.4.0",
     "tsx": "^4.22.3",
     "typedoc": "^0.28.19",
-    "typescript": "^5.9.3",
-    "zshy": "^0.7.3"
+    "typescript": "^6.0.3",
+    "zshy": "^0.8.0"
   },
   "zshy": {
     "exports": {

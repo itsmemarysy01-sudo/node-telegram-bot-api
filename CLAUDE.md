@@ -11,7 +11,9 @@ and CJS (`*.cjs`/`*.d.cts`), exposed via the `exports` map's `import`/`require` 
 be `import`ed or `require`d. `src/core` stays Node-free, so the edge story is unchanged. There is
 **no v1 compatibility**; the v1->v2 migration cheatsheet lives in `CHANGELOG.md`.
 
-Current development happens on `feat/v2-core`; the base/release branch is `master`.
+Development happens on `master`, which is also the base/release branch. (The v2
+rewrite was built on a `feat/v2-core` integration branch, now fully merged into
+`master` and no longer used.)
 
 ## Commands
 
@@ -20,11 +22,14 @@ Bun is the primary toolchain (it is a devDependency and runs the unit suite and 
 ```sh
 bun install                       # install deps (CI uses --frozen-lockfile)
 
-npm run check                     # full local gate: typecheck (x3) + lint:core + check:edge + unit tests
+npm run check                     # full local gate: typecheck (x4) + lint:core + lint:bun-isolation + check:edge + lint:format + unit tests
 npm run typecheck                 # tsc --noEmit over src (strict)
 npm run typecheck:test            # tsc over test/ (needs bun types installed)
 npm run lint:core                 # FAILS if src/core touches node:* or Node globals (see below)
+npm run lint:bun-isolation        # FAILS if src/core or src/node imports bun / bun:*
 npm run check:edge                # FAILS if src/core bundles a Node builtin (even transitively)
+npm run lint:format               # Biome lint + format check over src/ and scripts/
+npx biome check --write ./src ./scripts   # apply Biome's fixes (config: root biome.json)
 
 npm test                          # unit tests via Bun (test/unit)
 npm run test:node:unit            # unit tests via Node's node:test + tsx (CI runs this on Node 22/24/26)
@@ -43,7 +48,7 @@ bun test -t "429 then success retries"        # by test-name substring
 
 ## Architecture
 
-Three source folders, one published package, exposed via subpath exports (`.`, `./node`, `./types`):
+Four source folders, one published package, exposed via subpath exports (`.`, `./node`, `./bun`, `./types`):
 
 ```text
 src/
@@ -55,12 +60,14 @@ src/
   node/   the ONLY folder allowed to import node:*. Node-only sugar: fromPath() (fs
           uploads), createWebhookServer() (node:http -> delegates to core's
           webhookCallback), the managed run() polling runner, the DEBUG stderr sink.
+  bun/    the ONLY folder allowed to import bun / bun:*. Bun-native session stores
+          (SQLite, SQL, Redis); never re-exported from `.` or `./node`.
   types/  the generated schema (re-exported by core): discriminated Update, the generated
           Api method signatures / *Params / *Result types, expanded MessageEntity.
 ```
 
-The `exports` map points `.` at the core, `./node` at the Node helpers, and `./types` at the
-schema; each subpath ships ESM + CJS with matching typings:
+The `exports` map points `.` at the core, `./node` at the Node helpers, `./bun` at the Bun stores,
+and `./types` at the schema; each subpath ships ESM + CJS with matching typings:
 
 ```jsonc
 // package.json
@@ -70,6 +77,7 @@ schema; each subpath ships ESM + CJS with matching typings:
     "require": { "types": "./dist/core/index.d.cts", "default": "./dist/core/index.cjs" }
   },
   "./node":  { /* same shape -> dist/node/*  */ },
+  "./bun":   { /* same shape -> dist/bun/*   */ },
   "./types": { /* same shape -> dist/types/* */ }
 }
 ```
@@ -144,6 +152,57 @@ Errors (`src/core/errors.ts`): a `TelegramBotError` base preserving `cause`, plu
 + a `retryAfter` getter). Callers branch on values (`err.errorCode === 429`, `err.retryAfter`),
 never on message text.
 
+## Use cases
+
+`README.md` is the user-facing reference for each feature below. Runnable examples live in
+[`examples/`](examples/README.md); `npm run typecheck:examples` (part of `npm run check`) keeps them
+compiling.
+
+### Middleware
+
+koa-style: `bot.use(mw)` wraps everything downstream via `await next()` (timing, auth, sessions,
+rate-limit, error boundaries). A middleware may carry `init`/`close`: `bot.init()` runs them once in
+registration order (also learns `bot.botInfo` via `getMe()`), `bot.close()` in reverse. A handler
+error never stops the bot: it goes to the `bot.catch()` boundary (default `console.error`, update
+consumed). Throwing from the boundary is the fail-loud opt-in (`startPolling()` rejects, the
+webhook answers 500).
+
+### Sessions (`src/core/session.ts`)
+
+Opt-in `createSession<T>({ store, initial?, ttlSeconds?, replyTracking? })`. The `store` is
+**required** (no implicit default). Nothing lives in process memory between updates, so the same
+code works on serverless and on polling. Default key is `chat:<id>`. The handle exposes `.data`,
+`.ext()` (for layers built on sessions) and `.delete()` (evicts the key on flush). For multi-step
+flows, type the session as a discriminated union (see `12-conversation.ts`).
+
+### Reply tracking (`src/core/reply-tracking.ts`)
+
+A layer on top of the session, stored in the envelope's `ext.reply`; a bot that does not use it
+persists nothing extra. Markers are plain JSON matched on `reply_to_message.message_id` (replies) or
+`callback_query.message.message_id` (presses), never live promises, so they survive restarts.
+Replies and presses use **separate tables**. A marker expires only if it has a TTL: a per-call
+`ttlSeconds`, or `replyTracking.defaultTtlSeconds` for every marker (`slidingTtl` re-arms it on
+use); the session's own `ttlSeconds` still expires the whole envelope, markers included. Size is
+bounded separately: `maxEntriesPerChat` / `maxBytesPerChat` evict the least-recently-used markers
+per chat. A press does **not** consume its marker unless `{ once: true }` (at most once, not
+exactly once). Prefer plain `callback_data` when 64 bytes are enough.
+
+### Storage backends
+
+All implement the string key/value `SessionStore`: `read`, `write(key, value, { ttlSeconds })`,
+`delete`, optional `init`/`close`/`touch`. Serialization happens once in the session codec, never
+in a store.
+
+| Store | Subpath | Runtime | Source |
+| --- | --- | --- | --- |
+| `MemorySessionStorage` | `.` | any (not durable) | `src/core/memory-session-storage.ts` |
+| `S3SessionStorage` | `.` | any (SigV4 over `fetch`) | `src/core/s3-session-storage.ts` |
+| `FileSessionStorage` | `./node` | Node | `src/node/file-session-storage.ts` |
+| `SqliteSessionStorage`, `SqlSessionStorage`, `RedisSessionStorage` | `./bun` | Bun | `src/bun/*` |
+
+`src/core` and `src/node` must not import `bun` / `bun:*` (enforced by `lint:bun-isolation`); the
+Bun stores stay behind `./bun`, so a Node or edge install never resolves them.
+
 ## Critical invariants
 
 - **`src/core/api.ts` and `src/types/schemas.ts` are GENERATED** by `scripts/api-parser.ts` from
@@ -158,6 +217,12 @@ never on message text.
   misses absent keys.
 - **ASCII only** in code, comments, and commit messages: use `-`, `->`, `...` - never em dashes or
   smart quotes (a commit hook rejects them; emoji are fine).
+- **Types are as strict as the Bot API prose, not only its tables.** When the docs mark a
+  field "Optional" but the description states a rule ("required unless ...", "one of ..."),
+  encode the rule in the generator so a wrong call is a compile error, not a runtime error
+  (e.g. `ChatOrCallbackReply`, the `EphemeralMessageParameters` union, the exclusive
+  `ReplyMarkup`). Each rule must check the documented phrase or shape on every run and fail
+  the generator if it no longer matches - never drop a rule silently.
 - TypeScript style: prefer `type` over `interface`; never emit `any`; avoid `unknown` and index
   signatures. Prose-enum string fields (e.g. `MessageEntity.type`) are deliberately kept `string`,
   not narrowed to unions.

@@ -1,5 +1,5 @@
 /**
- * MessageEntity helpers (§6.3).
+ * MessageEntity helpers.
  *
  * `EntityBuilder` is a fluent builder that accumulates text and tracks UTF-16 offsets so
  * callers never hand-count them. A JS string's `.length` already counts UTF-16
@@ -19,6 +19,8 @@ export const EntityType = {
   Url: "url",
   Email: "email",
   PhoneNumber: "phone_number",
+  BankCardNumber: "bank_card_number",
+  TonAddress: "ton_address",
   Bold: "bold",
   Italic: "italic",
   Underline: "underline",
@@ -31,6 +33,7 @@ export const EntityType = {
   TextLink: "text_link",
   TextMention: "text_mention",
   CustomEmoji: "custom_emoji",
+  DateTime: "date_time",
 } as const;
 
 export interface BuiltEntities {

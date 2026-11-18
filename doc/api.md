@@ -37,6 +37,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `answerPreCheckoutQuery` | `params`: [AnswerPreCheckoutQueryParams](#answerprecheckoutqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerPreCheckoutQuery](https://core.telegram.org/bots/api#answerprecheckoutquery) |
 | `answerShippingQuery` | `params`: [AnswerShippingQueryParams](#answershippingqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerShippingQuery](https://core.telegram.org/bots/api#answershippingquery) |
 | `answerWebAppQuery` | `params`: [AnswerWebAppQueryParams](#answerwebappqueryparams), `signal?`: AbortSignal | Promise<[SentWebAppMessage](#sentwebappmessage)> | [answerWebAppQuery](https://core.telegram.org/bots/api#answerwebappquery) |
+| `answerWidgetQuery` | `params`: [AnswerWidgetQueryParams](#answerwidgetqueryparams), `signal?`: AbortSignal | Promise<boolean> | [answerWidgetQuery](https://core.telegram.org/bots/api#answerwidgetquery) |
 | `approveChatJoinRequest` | `params`: [ApproveChatJoinRequestParams](#approvechatjoinrequestparams), `signal?`: AbortSignal | Promise<boolean> | [approveChatJoinRequest](https://core.telegram.org/bots/api#approvechatjoinrequest) |
 | `approveSuggestedPost` | `params`: [ApproveSuggestedPostParams](#approvesuggestedpostparams), `signal?`: AbortSignal | Promise<boolean> | [approveSuggestedPost](https://core.telegram.org/bots/api#approvesuggestedpost) |
 | `banChatMember` | `params`: [BanChatMemberParams](#banchatmemberparams), `signal?`: AbortSignal | Promise<boolean> | [banChatMember](https://core.telegram.org/bots/api#banchatmember) |
@@ -55,6 +56,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `declineChatJoinRequest` | `params`: [DeclineChatJoinRequestParams](#declinechatjoinrequestparams), `signal?`: AbortSignal | Promise<boolean> | [declineChatJoinRequest](https://core.telegram.org/bots/api#declinechatjoinrequest) |
 | `declineSuggestedPost` | `params`: [DeclineSuggestedPostParams](#declinesuggestedpostparams), `signal?`: AbortSignal | Promise<boolean> | [declineSuggestedPost](https://core.telegram.org/bots/api#declinesuggestedpost) |
 | `deleteAllMessageReactions` | `params`: [DeleteAllMessageReactionsParams](#deleteallmessagereactionsparams), `signal?`: AbortSignal | Promise<boolean> | [deleteAllMessageReactions](https://core.telegram.org/bots/api#deleteallmessagereactions) |
+| `deleteBusinessAccountGift` | `params`: [DeleteBusinessAccountGiftParams](#deletebusinessaccountgiftparams), `signal?`: AbortSignal | Promise<boolean> | [deleteBusinessAccountGift](https://core.telegram.org/bots/api#deletebusinessaccountgift) |
 | `deleteBusinessMessages` | `params`: [DeleteBusinessMessagesParams](#deletebusinessmessagesparams), `signal?`: AbortSignal | Promise<boolean> | [deleteBusinessMessages](https://core.telegram.org/bots/api#deletebusinessmessages) |
 | `deleteChatPhoto` | `params`: [DeleteChatPhotoParams](#deletechatphotoparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatPhoto](https://core.telegram.org/bots/api#deletechatphoto) |
 | `deleteChatStickerSet` | `params`: [DeleteChatStickerSetParams](#deletechatstickersetparams), `signal?`: AbortSignal | Promise<boolean> | [deleteChatStickerSet](https://core.telegram.org/bots/api#deletechatstickerset) |
@@ -82,6 +84,8 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `editMessageMedia` | `params`: [EditMessageMediaParams](#editmessagemediaparams), `signal?`: AbortSignal | Promise<[EditMessageMediaResult](#editmessagemediaresult)> | [editMessageMedia](https://core.telegram.org/bots/api#editmessagemedia) |
 | `editMessageReplyMarkup` | `params?`: [EditMessageReplyMarkupParams](#editmessagereplymarkupparams), `signal?`: AbortSignal | Promise<[EditMessageReplyMarkupResult](#editmessagereplymarkupresult)> | [editMessageReplyMarkup](https://core.telegram.org/bots/api#editmessagereplymarkup) |
 | `editMessageText` | `params?`: [EditMessageTextParams](#editmessagetextparams), `signal?`: AbortSignal | Promise<[EditMessageTextResult](#editmessagetextresult)> | [editMessageText](https://core.telegram.org/bots/api#editmessagetext) |
+| `editMessageWidgetData` | `params?`: [EditMessageWidgetDataParams](#editmessagewidgetdataparams), `signal?`: AbortSignal | Promise<boolean> | [editMessageWidgetData](https://core.telegram.org/bots/api#editmessagewidgetdata) |
+| `editSharedWidgetData` | `params`: [EditSharedWidgetDataParams](#editsharedwidgetdataparams), `signal?`: AbortSignal | Promise<boolean> | [editSharedWidgetData](https://core.telegram.org/bots/api#editsharedwidgetdata) |
 | `editStory` | `params`: [EditStoryParams](#editstoryparams), `signal?`: AbortSignal | Promise<[Story](#story)> | [editStory](https://core.telegram.org/bots/api#editstory) |
 | `editUserStarSubscription` | `params`: [EditUserStarSubscriptionParams](#edituserstarsubscriptionparams), `signal?`: AbortSignal | Promise<boolean> | [editUserStarSubscription](https://core.telegram.org/bots/api#edituserstarsubscription) |
 | `exportChatInviteLink` | `params`: [ExportChatInviteLinkParams](#exportchatinvitelinkparams), `signal?`: AbortSignal | Promise<string> | [exportChatInviteLink](https://core.telegram.org/bots/api#exportchatinvitelink) |
@@ -97,6 +101,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `getChatMember` | `params`: [GetChatMemberParams](#getchatmemberparams), `signal?`: AbortSignal | Promise<[ChatMember](#chatmember)> | [getChatMember](https://core.telegram.org/bots/api#getchatmember) |
 | `getChatMemberCount` | `params`: [GetChatMemberCountParams](#getchatmembercountparams), `signal?`: AbortSignal | Promise<number> | [getChatMemberCount](https://core.telegram.org/bots/api#getchatmembercount) |
 | `getChatMenuButton` | `params?`: [GetChatMenuButtonParams](#getchatmenubuttonparams), `signal?`: AbortSignal | Promise<[MenuButton](#menubutton)> | [getChatMenuButton](https://core.telegram.org/bots/api#getchatmenubutton) |
+| `getChatShareThemeBackdrops` | `signal?`: AbortSignal | Promise<[ChatShareThemeBackdrops](#chatsharethemebackdrops)> | [getChatShareThemeBackdrops](https://core.telegram.org/bots/api#getchatsharethemebackdrops) |
 | `getCustomEmojiStickers` | `params`: [GetCustomEmojiStickersParams](#getcustomemojistickersparams), `signal?`: AbortSignal | Promise<[GetCustomEmojiStickersResult](#getcustomemojistickersresult)> | [getCustomEmojiStickers](https://core.telegram.org/bots/api#getcustomemojistickers) |
 | `getFile` | `params`: [GetFileParams](#getfileparams), `signal?`: AbortSignal | Promise<[File](#file)> | [getFile](https://core.telegram.org/bots/api#getfile) |
 | `getForumTopicIconStickers` | `signal?`: AbortSignal | Promise<[GetForumTopicIconStickersResult](#getforumtopiciconstickersresult)> | [getForumTopicIconStickers](https://core.telegram.org/bots/api#getforumtopiciconstickers) |
@@ -112,6 +117,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `getMyStarBalance` | `signal?`: AbortSignal | Promise<[StarAmount](#staramount)> | [getMyStarBalance](https://core.telegram.org/bots/api#getmystarbalance) |
 | `getStarTransactions` | `params?`: [GetStarTransactionsParams](#getstartransactionsparams), `signal?`: AbortSignal | Promise<[StarTransactions](#startransactions)> | [getStarTransactions](https://core.telegram.org/bots/api#getstartransactions) |
 | `getStickerSet` | `params`: [GetStickerSetParams](#getstickersetparams), `signal?`: AbortSignal | Promise<[StickerSet](#stickerset)> | [getStickerSet](https://core.telegram.org/bots/api#getstickerset) |
+| `getUniqueGift` | `params`: [GetUniqueGiftParams](#getuniquegiftparams), `signal?`: AbortSignal | Promise<[UniqueGift](#uniquegift)> | [getUniqueGift](https://core.telegram.org/bots/api#getuniquegift) |
 | `getUpdates` | `params?`: [GetUpdatesParams](#getupdatesparams), `signal?`: AbortSignal | Promise<[GetUpdatesResult](#getupdatesresult)> | [getUpdates](https://core.telegram.org/bots/api#getupdates) |
 | `getUserChatBoosts` | `params`: [GetUserChatBoostsParams](#getuserchatboostsparams), `signal?`: AbortSignal | Promise<[UserChatBoosts](#userchatboosts)> | [getUserChatBoosts](https://core.telegram.org/bots/api#getuserchatboosts) |
 | `getUserGifts` | `params`: [GetUserGiftsParams](#getusergiftsparams), `signal?`: AbortSignal | Promise<[OwnedGifts](#ownedgifts)> | [getUserGifts](https://core.telegram.org/bots/api#getusergifts) |
@@ -162,11 +168,13 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `sendPoll` | `params`: [SendPollParams](#sendpollparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendPoll](https://core.telegram.org/bots/api#sendpoll) |
 | `sendRichMessage` | `params`: [SendRichMessageParams](#sendrichmessageparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendRichMessage](https://core.telegram.org/bots/api#sendrichmessage) |
 | `sendRichMessageDraft` | `params`: [SendRichMessageDraftParams](#sendrichmessagedraftparams), `signal?`: AbortSignal | Promise<boolean> | [sendRichMessageDraft](https://core.telegram.org/bots/api#sendrichmessagedraft) |
+| `sendSharedWidget` | `params`: [SendSharedWidgetParams](#sendsharedwidgetparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendSharedWidget](https://core.telegram.org/bots/api#sendsharedwidget) |
 | `sendSticker` | `params`: [SendStickerParams](#sendstickerparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendSticker](https://core.telegram.org/bots/api#sendsticker) |
 | `sendVenue` | `params`: [SendVenueParams](#sendvenueparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVenue](https://core.telegram.org/bots/api#sendvenue) |
 | `sendVideo` | `params`: [SendVideoParams](#sendvideoparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVideo](https://core.telegram.org/bots/api#sendvideo) |
 | `sendVideoNote` | `params`: [SendVideoNoteParams](#sendvideonoteparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVideoNote](https://core.telegram.org/bots/api#sendvideonote) |
 | `sendVoice` | `params`: [SendVoiceParams](#sendvoiceparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendVoice](https://core.telegram.org/bots/api#sendvoice) |
+| `sendWidget` | `params`: [SendWidgetParams](#sendwidgetparams), `signal?`: AbortSignal | Promise<[Message](#message)> | [sendWidget](https://core.telegram.org/bots/api#sendwidget) |
 | `setBusinessAccountBio` | `params`: [SetBusinessAccountBioParams](#setbusinessaccountbioparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountBio](https://core.telegram.org/bots/api#setbusinessaccountbio) |
 | `setBusinessAccountGiftSettings` | `params`: [SetBusinessAccountGiftSettingsParams](#setbusinessaccountgiftsettingsparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountGiftSettings](https://core.telegram.org/bots/api#setbusinessaccountgiftsettings) |
 | `setBusinessAccountName` | `params`: [SetBusinessAccountNameParams](#setbusinessaccountnameparams), `signal?`: AbortSignal | Promise<boolean> | [setBusinessAccountName](https://core.telegram.org/bots/api#setbusinessaccountname) |
@@ -228,7 +236,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `hears` | `trigger`: string \| RegExp \| (string \| RegExp)[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Match message text: a string matches exactly (sets `ctx.match` to the text); a RegExp matches when `text.match(re)` is non-null (sets `ctx.match` to the `RegExpMatchArray`). |
 | `init` | - | Promise<void> | Run every registered middleware's `init()` once, in registration order. Memoized, and awaited by `startPolling()` and `handleUpdate()`, so setup failures surface at boot (or on the first webhook invocation) rather than as a per-update lazy path. Call it yourself to fail fast before serving anything.  A failure is not cached: the next call retries, and *resumes* at the plugin that failed - one whose setup already completed is not run a second time, so a plugin that opens a resource per call cannot leak one per retry. |
 | `isRunning` | - | boolean | - |
-| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
+| `on` | `kind`: "message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "widget_query" \| "shared_widget_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation" \| ("message" \| "edited_message" \| "channel_post" \| "edited_channel_post" \| "business_connection" \| "business_message" \| "edited_business_message" \| "deleted_business_messages" \| "guest_message" \| "message_reaction" \| "message_reaction_count" \| "inline_query" \| "chosen_inline_result" \| "callback_query" \| "widget_query" \| "shared_widget_query" \| "shipping_query" \| "pre_checkout_query" \| "purchased_paid_media" \| "poll" \| "poll_answer" \| "my_chat_member" \| "chat_member" \| "chat_join_request" \| "chat_boost" \| "removed_chat_boost" \| "managed_bot" \| "subscription" \| "stopped_message_generation")[], `...handlers`: [Middleware](#middleware)<[Context](#context)>[] | this | Run `handlers` only when the given payload key (e.g. `"message"`, `"callback_query"`) is present on the update. |
 | `startPolling` | `source?`: AsyncIterable<[Update](#update), any, any>, `options?`: [LongPollOptions](#longpolloptions) | Promise<void> | Pump an update source (default `longPoll`) through `handleUpdate` until `stop()` aborts. Resolves when the source is exhausted or aborted. This is long-poll mode; for webhooks use `webhookCallback`/`createWebhookServer`.  A handler error does not stop the pump: it is routed to the `catch` boundary (default: log and continue). The promise rejects only when that boundary itself throws - the fail-loud opt-in (see `catch`).  Not re-entrant: calling it while a previous pump is still active throws, so `isRunning()` stays truthful and the prior `AbortController` is never orphaned. Stop the running loop (`stop()`, then `await` its promise) first. |
 | `stop` | - | void | Abort the running pump loop. |
 | `use` | `...mw`: [Middleware](#middleware)<[Context](#context)>[] | this | Register one or more middleware to run on every update. A middleware that also carries `init` / `close` (see MiddlewarePlugin) is picked up for the bot lifecycle: its setup runs once via Bot.init, its teardown via Bot.close. |
@@ -238,6 +246,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Property | Type |
 | --- | --- |
 | `api` | [Api](#api) |
+| `botInfo` | [User](#user) \| undefined |
 
 ### `Context`
 
@@ -246,8 +255,8 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `answerCallbackQuery` | `other?`: Omit<[AnswerCallbackQueryParams](#answercallbackqueryparams), "callback_query_id"> | Promise<boolean> | Answer the callback query that triggered this update. Throws if the update is not a callback query. |
-| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.createdAt` / `.updatedAt`, `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
-| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat. Throws if no chat id can be derived from the update (e.g. an inline query carries no chat). |
+| `getSession` | - | [SessionHandle](#sessionhandle)<T> | The session handle for this update: `.data` (the persistent bag - mutate it in place or reassign it, it flushes after the handler), `.ext()` for layers built on sessions, and `.delete()` to evict the key. `<T>` is the caller's asserted `data` shape, defaulting to `Record<string, unknown>` like `createSession()` itself; to fix it once instead of per call site, use the middleware's own `.get(ctx)`. Throws if the session middleware has not run for this update (not registered, or no derivable session key). |
+| `reply` | `text`: string, `other?`: Omit<[SendMessageParams](#sendmessageparams), "chat_id" \| "text"> | Promise<[Message](#message)> | Send a message to the inferred chat, staying where the incoming message came from: `business_connection_id` for business messages (including `deleted_business_messages`), `message_thread_id` for forum-topic messages (`is_topic_message`; a plain reply thread is not followed), and `direct_messages_topic_id` for channel direct-messages chats. For a callback query these come from the message the button is attached to. Anything in `other` wins; pass e.g. `{ message_thread_id: undefined }` to opt out.  Throws if no chat id can be derived from the update (e.g. an inline query carries no chat) unless `other` makes it an ephemeral reply to a callback query, and for `guest_message`, which must be answered with `api.answerGuestQuery` and its `guest_query_id` instead. |
 
 #### Properties
 
@@ -265,6 +274,7 @@ An animated profile photo (a video); `main_frame_timestamp` picks the still fram
 | `editedMessage` | [Message](#message) \| undefined |
 | `from` | [User](#user) \| undefined |
 | `inlineQuery` | [InlineQuery](#inlinequery) \| undefined |
+| `me` | [User](#user) \| undefined |
 | `message` | [Message](#message) \| undefined |
 
 ### `EntityBuilder`
@@ -329,7 +339,7 @@ Explicit, web-standard wrapper for uploadable bytes.
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
-| `build` | `index`: number | string | This file's wire reference when it occupies attach slot `index`: `attach://media_<index>`. The matching multipart part is keyed `media_<index>` (the ref without the scheme). `InputFile` owns the naming convention; the slot index is allocated by `AttachedMedia` during its build pass (ADR-011). |
+| `build` | `index`: number | string | This file's wire reference when it occupies attach slot `index`: `attach://media_<index>`. The matching multipart part is keyed `media_<index>` (the ref without the scheme). `InputFile` owns the naming convention; the slot index is allocated by `serializeParams` while it resolves nested files. |
 
 #### Properties
 
@@ -417,9 +427,12 @@ A photo story for `postStory`/`editStory`. `.build()` returns the `InputStoryCon
 
 ### `RateLimiter`
 
-Combines a global token bucket with per-chat buckets. `acquire()` awaits the
-global bucket (when configured) and, when a `chatId` is present and `perChat`
-is set, the bucket for that chat (created on first use, keyed by string id).
+Combines a global token bucket with per-chat buckets. `acquire()` waits until
+the global bucket (when configured) and, when a `chatId` is present and
+`perChat` is set, the bucket for that chat (created on first use, keyed by
+string id) both have a token, then takes both at once - so a request queued
+behind a busy chat holds no global token, and one queued behind the global
+cap holds no chat token. Both limits are checked at send time.
 Per-chat buckets are cached as a bounded LRU: a chat that is accessed is moved
 to most-recently-used, and once `maxChatBuckets` is reached the
 least-recently-used chat's bucket is evicted, so the map cannot grow without
@@ -437,6 +450,7 @@ bound for long-lived bots that talk to many distinct chats.
 
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
+| `close` | - | void | Close the client, but only if this store opened it (a passed-in `client` and the shared `redis` are the caller's / runtime's). Closing ends this store's life - a later use throws and you construct a new one. With a shared or caller-supplied client this is a no-op. |
 | `delete` | `key`: string | Promise<void> | - |
 | `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
 | `touch` | `key`: string, `ttlSeconds`: number | Promise<void> | Refresh a key's expiry without rewriting it - what the middleware calls when an update changed nothing, so an active chat is not evicted mid-conversation. |
@@ -554,8 +568,19 @@ own data. `.build()` returns the plain `RichText` (its accumulated sequence).
 | `subscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `superscript` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `textMention` | `content`: [RichTextContent](#richtextcontent), `user`: [User](#user) | this | A text_mention of a user (works without a username). |
+| `tonAddress` | `content`: [RichTextContent](#richtextcontent), `address`: string | this | - |
 | `underline` | `content`: [RichTextContent](#richtextcontent) | this | - |
 | `url` | `content`: [RichTextContent](#richtextcontent), `url`: string | this | A hyperlink to `url`. |
+
+### `S3SessionStorage`
+
+#### Methods
+
+| Method | Params | Returns | Description |
+| --- | --- | --- | --- |
+| `delete` | `key`: string | Promise<void> | - |
+| `read` | `key`: string | Promise<string \| undefined> | The stored string for `key`, or `undefined` when there is none. |
+| `write` | `key`: string, `value`: string | Promise<void> | Persist `value` verbatim under `key`. |
 
 ### `SqlSessionStorage`
 
@@ -649,6 +674,7 @@ waits exactly long enough for one to refill (abortable).
 | Method | Params | Returns | Description |
 | --- | --- | --- | --- |
 | `take` | `signal?`: AbortSignal | Promise<void> | Wait until a token is available, then consume one. The post-wait recheck closes the concurrent-oversell race: two `take()`s that both see an empty bucket compute the same wait, but on wake the first refills+decrements and the second's recheck sees the empty bucket again and waits another cycle - so the configured rate is never exceeded even under burst contention. The decrement happens only once the wait is in the past, so an aborted take consumes no token. |
+| `takeAll` | `buckets`: readonly [TokenBucket](#tokenbucket)[], `signal?`: AbortSignal | Promise<void> | Wait until EVERY bucket has a token, then consume one from each in the same step. Taking them one after another would spend the first bucket's token while the request still waits on the next, so it would go out later without a fresh check of the first bucket's rate. Same recheck loop and abort guarantee as `take()`: nothing is consumed until all waits are in the past. |
 
 ### `Transport`
 
@@ -947,7 +973,10 @@ default delay.
 
 ### `longPoll()`
 
-Async-generator update source (ADR-004): long-polls `getUpdates` and yields each update until the signal aborts.
+Async-generator update source: long-polls `getUpdates` and yields each update
+until the signal aborts. An update counts as handled once the consumer asks
+for the next one; on abort, handled-but-unconfirmed updates are confirmed with
+one final poll (not on error exits, so fail-loud keeps redelivery).
 
 | Param | Type |
 | --- | --- |
@@ -1109,12 +1138,13 @@ out, whether the loop stopped or threw.
 A fatal poll-stop is also written to stderr before being re-thrown: a bare
 rejection can be dropped (fire-and-forget, or a swallowing `.catch`), which
 would leave the process alive but no longer polling - the silent hang #1350
-describes.
+describes. Pass `exitOnError: true` to also exit the process non-zero after
+teardown, so a supervisor restarts the bot instead of relying on the caller.
 
 | Param | Type |
 | --- | --- |
 | `bot` | [Bot](#bot) |
-| `options?` | [LongPollOptions](#longpolloptions) |
+| `options` | [RunOptions](#runoptions) |
 
 **Returns:** Promise<void>
 
@@ -1133,12 +1163,32 @@ comparison always inspects every position, so it leaks no information about
 
 **Returns:** boolean
 
+### `signAwsV4()`
+
+Compute the AWS Signature V4 headers for a request. Returns the headers to
+send (lowercased names): `authorization`, `x-amz-date`, `x-amz-content-sha256`,
+`host`, and `x-amz-security-token` when the credentials are temporary, merged
+with the caller's `headers`.
+
+Signs the URL's path and query exactly as `fetch` will send them, so the
+signed and sent requests match by construction. The canonical query is built
+per SigV4 (each name/value URI-encoded, then sorted by the encoded name). Query
+values are read via `URLSearchParams`, which decodes `+` as a space - fine for
+the object operations this store makes (none carry a query).
+
+| Param | Type |
+| --- | --- |
+| `params` | [SignAwsV4Params](#signawsv4params) |
+
+**Returns:** Promise<Record<string, string>>
+
 ### `startWebhook()`
 
 Managed webhook runner: create a `node:http` webhook server, start listening,
-and resolve when it shuts down. Installs `SIGINT`/`SIGTERM` handlers that close
-the server for a graceful exit (cleaned up in a `finally`), mirroring `run()` for
-long polling. Rejects if the server fails (e.g. the port is in use).
+and resolve when it shuts down. Once listening, installs `SIGINT`/`SIGTERM`
+handlers that close the server for a graceful exit (cleaned up in a `finally`),
+mirroring `run()` for long polling. Rejects if the server fails to start (e.g.
+the port is in use).
 
 Shutdown cannot hang: `server.close()` waits for existing connections to end,
 so we also drop idle keep-alive sockets at once and force-close anything still
@@ -1228,7 +1278,7 @@ Subset of Telegram's `ResponseParameters` carried on API errors.
 A file-carrying composite produced by `serializeParams` for a structured field
 that contained nested `InputFile`s: the already-serialized JSON (with `attach://`
 refs) plus the keyed parts those refs point at. The encoder sets `json` under the
-field name and attaches each part - it still stringifies nothing (ADR-011).
+field name and attaches each part - it still stringifies nothing.
 
 | Property | Type |
 | --- | --- |
@@ -1534,6 +1584,21 @@ type AnswerWebAppQueryParams = {
 type AnswerWebAppQueryResult = [SentWebAppMessage](#sentwebappmessage);
 ```
 
+### `AnswerWidgetQueryParams`
+
+```ts
+type AnswerWidgetQueryParams = {
+  data?: string;
+  widget_query_id: string;
+};
+```
+
+### `AnswerWidgetQueryResult`
+
+```ts
+type AnswerWidgetQueryResult = boolean;
+```
+
 ### `ApproveChatJoinRequestParams`
 
 ```ts
@@ -1563,6 +1628,19 @@ type ApproveSuggestedPostParams = {
 
 ```ts
 type ApproveSuggestedPostResult = boolean;
+```
+
+### `AreaPosition`
+
+```ts
+type AreaPosition = {
+  corner_radius_percentage: number;
+  height_percentage: number;
+  rotation_angle: number;
+  width_percentage: number;
+  x_percentage: number;
+  y_percentage: number;
+};
 ```
 
 ### `Audio`
@@ -2109,9 +2187,11 @@ type ChatFullInfo = {
   profile_accent_color_id?: number;
   profile_background_custom_emoji_id?: string;
   rating?: [UserRating](#userrating);
+  share_theme?: [ChatShareTheme](#chatsharetheme);
   slow_mode_delay?: number;
   sticker_set_name?: string;
   title?: string;
+  ton_wallet_card?: [TonWalletCard](#tonwalletcard);
   type: string;
   unique_gift_colors?: [UniqueGiftColors](#uniquegiftcolors);
   unrestrict_boost_count?: number;
@@ -2287,6 +2367,23 @@ type ChatMemberUpdated = {
 };
 ```
 
+### `ChatOrCallbackReply`
+
+Target of an ephemeral-capable send method. Telegram lets `chat_id` be
+omitted only for an ephemeral reply to a callback query (`callback_query_id`
+without `receiver_user_id`), so every other call without it is a type error.
+`chat_id?: never` means the key must be omitted. The `chat_id` member is last
+so that the compiler error names `chat_id`.
+
+```ts
+type ChatOrCallbackReply = {
+  chat_id?: never;
+  ephemeral_message_parameters: [EphemeralCallbackReply](#ephemeralcallbackreply);
+} | {
+  chat_id: number | string;
+};
+```
+
 ### `ChatOwnerChanged`
 
 ```ts
@@ -2334,6 +2431,49 @@ type ChatPhoto = {
   big_file_unique_id: string;
   small_file_id: string;
   small_file_unique_id: string;
+};
+```
+
+### `ChatShareTheme`
+
+```ts
+type ChatShareTheme = [ChatShareThemeEmoji](#chatsharethemeemoji) | [ChatShareThemeUniqueGift](#chatsharethemeuniquegift);
+```
+
+### `ChatShareThemeBackdrop`
+
+```ts
+type ChatShareThemeBackdrop = {
+  colors: [UniqueGiftBackdropColors](#uniquegiftbackdropcolors);
+  id: number;
+  name: string;
+};
+```
+
+### `ChatShareThemeBackdrops`
+
+```ts
+type ChatShareThemeBackdrops = {
+  backdrops: [ChatShareThemeBackdrop](#chatsharethemebackdrop)[];
+};
+```
+
+### `ChatShareThemeEmoji`
+
+```ts
+type ChatShareThemeEmoji = {
+  background_backdrop_id?: number;
+  emojis: [EmojiType](#emojitype)[];
+  type: string;
+};
+```
+
+### `ChatShareThemeUniqueGift`
+
+```ts
+type ChatShareThemeUniqueGift = {
+  gift: [UniqueGift](#uniquegift);
+  type: string;
 };
 ```
 
@@ -2520,7 +2660,7 @@ type CopyMessageParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
@@ -2714,6 +2854,21 @@ type DeleteAllMessageReactionsParams = {
 
 ```ts
 type DeleteAllMessageReactionsResult = boolean;
+```
+
+### `DeleteBusinessAccountGiftParams`
+
+```ts
+type DeleteBusinessAccountGiftParams = {
+  business_connection_id: string;
+  owned_gift_id: string;
+};
+```
+
+### `DeleteBusinessAccountGiftResult`
+
+```ts
+type DeleteBusinessAccountGiftResult = boolean;
 ```
 
 ### `DeleteBusinessMessagesParams`
@@ -2940,6 +3095,16 @@ type DirectMessagesTopic = {
 
 ```ts
 type DisabledButton = Record<string, never>;
+```
+
+### `DistributiveOmit`
+
+`Omit` applied to each member of a union. Plain `Omit` merges the members,
+which loses the `chat_id` rule of the send param types: use this in wrappers,
+e.g. `DistributiveOmit<SendMessageParams, "parse_mode">`.
+
+```ts
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
 ```
 
 ### `Document`
@@ -3224,6 +3389,40 @@ type EditMessageTextParams = {
 type EditMessageTextResult = [Message](#message) | boolean;
 ```
 
+### `EditMessageWidgetDataParams`
+
+```ts
+type EditMessageWidgetDataParams = {
+  chat_data?: string;
+  chat_id?: number | string;
+  inline_message_id?: string;
+  message_id?: number;
+  public_data?: string;
+};
+```
+
+### `EditMessageWidgetDataResult`
+
+```ts
+type EditMessageWidgetDataResult = boolean;
+```
+
+### `EditSharedWidgetDataParams`
+
+```ts
+type EditSharedWidgetDataParams = {
+  cache_time?: number;
+  public_data: string;
+  widget_id: string;
+};
+```
+
+### `EditSharedWidgetDataResult`
+
+```ts
+type EditSharedWidgetDataResult = boolean;
+```
+
 ### `EditStoryParams`
 
 ```ts
@@ -3260,6 +3459,30 @@ type EditUserStarSubscriptionParams = {
 type EditUserStarSubscriptionResult = boolean;
 ```
 
+### `EmojiType`
+
+```ts
+type EmojiType = [EmojiTypeEmoji](#emojitypeemoji) | [EmojiTypeCustomEmoji](#emojitypecustomemoji);
+```
+
+### `EmojiTypeCustomEmoji`
+
+```ts
+type EmojiTypeCustomEmoji = {
+  custom_emoji_id: string;
+  type: string;
+};
+```
+
+### `EmojiTypeEmoji`
+
+```ts
+type EmojiTypeEmoji = {
+  emoji: string;
+  type: string;
+};
+```
+
 ### `EncryptedCredentials`
 
 ```ts
@@ -3287,10 +3510,22 @@ type EncryptedPassportElement = {
 };
 ```
 
+### `EphemeralCallbackReply`
+
+An ephemeral reply to a callback query: `callback_query_id` without `receiver_user_id`.
+
+```ts
+type EphemeralCallbackReply = {
+  callback_query_id: string;
+  receiver_user_id?: never;
+  replace_callback_query_message?: boolean;
+};
+```
+
 ### `EphemeralMessageParameters`
 
 ```ts
-type EphemeralMessageParameters = {
+type EphemeralMessageParameters = [EphemeralCallbackReply](#ephemeralcallbackreply) | {
   callback_query_id?: string;
   receiver_user_id: number;
   replace_callback_query_message?: boolean;
@@ -3351,6 +3586,7 @@ type ExternalReplyInfo = {
   video?: [Video](#video);
   video_note?: [VideoNote](#videonote);
   voice?: [Voice](#voice);
+  widget?: [Widget](#widget);
 };
 ```
 
@@ -3665,6 +3901,18 @@ type GetChatParams = {
 type GetChatResult = [ChatFullInfo](#chatfullinfo);
 ```
 
+### `GetChatShareThemeBackdropsParams`
+
+```ts
+type GetChatShareThemeBackdropsParams = Record<string, never>;
+```
+
+### `GetChatShareThemeBackdropsResult`
+
+```ts
+type GetChatShareThemeBackdropsResult = [ChatShareThemeBackdrops](#chatsharethemebackdrops);
+```
+
 ### `GetCustomEmojiStickersParams`
 
 ```ts
@@ -3872,6 +4120,20 @@ type GetStickerSetParams = {
 
 ```ts
 type GetStickerSetResult = [StickerSet](#stickerset);
+```
+
+### `GetUniqueGiftParams`
+
+```ts
+type GetUniqueGiftParams = {
+  name: string;
+};
+```
+
+### `GetUniqueGiftResult`
+
+```ts
+type GetUniqueGiftResult = [UniqueGift](#uniquegift);
 ```
 
 ### `GetUpdatesParams`
@@ -4823,7 +5085,7 @@ type InputMediaVoiceNote = {
 ### `InputMessageContent`
 
 ```ts
-type InputMessageContent = [InputTextMessageContent](#inputtextmessagecontent) | [InputRichMessageContent](#inputrichmessagecontent) | [InputLocationMessageContent](#inputlocationmessagecontent) | [InputVenueMessageContent](#inputvenuemessagecontent) | [InputContactMessageContent](#inputcontactmessagecontent) | [InputInvoiceMessageContent](#inputinvoicemessagecontent);
+type InputMessageContent = [InputTextMessageContent](#inputtextmessagecontent) | [InputRichMessageContent](#inputrichmessagecontent) | [InputLocationMessageContent](#inputlocationmessagecontent) | [InputVenueMessageContent](#inputvenuemessagecontent) | [InputContactMessageContent](#inputcontactmessagecontent) | [InputInvoiceMessageContent](#inputinvoicemessagecontent) | [InputWidgetMessageContent](#inputwidgetmessagecontent) | [InputSharedWidgetMessageContent](#inputsharedwidgetmessagecontent);
 ```
 
 ### `InputPaidMedia`
@@ -5202,6 +5464,19 @@ type InputRichMessageMedia = {
 };
 ```
 
+### `InputSharedWidgetMessageContent`
+
+```ts
+type InputSharedWidgetMessageContent = {
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  parse_mode?: string;
+  show_caption_above_media?: boolean;
+  widget_id: string;
+};
+```
+
 ### `InputSticker`
 
 ```ts
@@ -5264,6 +5539,24 @@ type InputVenueMessageContent = {
   latitude: number;
   longitude: number;
   title: string;
+};
+```
+
+### `InputWidgetMessageContent`
+
+```ts
+type InputWidgetMessageContent = {
+  allow_queries?: boolean;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  height?: number;
+  html: string;
+  is_shared?: boolean;
+  parse_mode?: string;
+  public_data?: string;
+  show_caption_above_media?: boolean;
+  width?: number;
 };
 ```
 
@@ -5595,6 +5888,7 @@ type Message = {
   new_chat_title?: string;
   paid_media?: [PaidMediaInfo](#paidmediainfo);
   paid_message_price_changed?: [PaidMessagePriceChanged](#paidmessagepricechanged);
+  paid_messages_waived?: [PaidMessagesWaived](#paidmessageswaived);
   paid_star_count?: number;
   passport_data?: [PassportData](#passportdata);
   photo?: [PhotoSize](#photosize)[];
@@ -5628,6 +5922,7 @@ type Message = {
   suggested_post_refunded?: [SuggestedPostRefunded](#suggestedpostrefunded);
   supergroup_chat_created?: true;
   text?: string;
+  ton_wallet_transfer?: [TonWalletTransfer](#tonwallettransfer);
   unique_gift?: [UniqueGiftInfo](#uniquegiftinfo);
   users_shared?: [UsersShared](#usersshared);
   venue?: [Venue](#venue);
@@ -5640,6 +5935,7 @@ type Message = {
   video_note?: [VideoNote](#videonote);
   voice?: [Voice](#voice);
   web_app_data?: [WebAppData](#webappdata);
+  widget?: [Widget](#widget);
   write_access_allowed?: [WriteAccessAllowed](#writeaccessallowed);
 };
 ```
@@ -5925,6 +6221,12 @@ type PaidMediaVideo = {
 type PaidMessagePriceChanged = {
   paid_message_star_count: number;
 };
+```
+
+### `PaidMessagesWaived`
+
+```ts
+type PaidMessagesWaived = Record<string, never>;
 ```
 
 ### `ParseMode`
@@ -6344,6 +6646,7 @@ type RedisSessionStorageOptions = {
   client?: RedisClient;
   prefix?: string;
   ttlSeconds?: number;
+  url?: string;
 };
 ```
 
@@ -6522,10 +6825,11 @@ type ReplyMarker = Record<string, unknown>;
 
 ### `ReplyMarkup`
 
-Union of the four reply-markup objects.
+One of the four reply-markup objects. Telegram uses only one per message, so
+mixing them (e.g. `inline_keyboard` + `keyboard`) is a type error.
 
 ```ts
-type ReplyMarkup = [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+type ReplyMarkup = _Exclusive<[InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply)>;
 ```
 
 ### `ReplyParameters`
@@ -6542,6 +6846,32 @@ type ReplyParameters = {
   quote_entities?: [MessageEntity](#messageentity)[];
   quote_parse_mode?: string;
   quote_position?: number;
+  quote_rich_texts?: [RichText](#richtext)[];
+};
+```
+
+### `ReplyTrackingOptions`
+
+Per-chat bounds for the reply/press tables, passed to `createSession()` and
+read off the session by this layer. All optional; with none set the tables are
+unbounded (the historic behavior) and grow until entries are matched, forgotten,
+or expire.
+
+TTL caps a marker's *age* but not the table's *size*: a chat that fires many
+short-lived keyboards can still balloon between prunes. `maxEntriesPerChat` /
+`maxBytesPerChat` bound the size, evicting the least-recently-used markers once a
+budget is exceeded - "least-recently-used", not "oldest", because an active old
+keyboard must outlive an idle newer one. Recency (`lastUsedAt`) is stamped on
+both record and match, so a matched-but-kept press marker (a live inline
+keyboard) counts as fresh.
+
+```ts
+type ReplyTrackingOptions = {
+  defaultTtlSeconds?: number;
+  maxBytesPerChat?: number;
+  maxEntriesPerChat?: number;
+  now?: () => number;
+  slidingTtl?: boolean;
 };
 ```
 
@@ -6951,7 +7281,7 @@ type RichMessageButton = {
 ### `RichText`
 
 ```ts
-type RichText = string | [RichText](#richtext)[] | [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
+type RichText = string | [RichText](#richtext)[] | [RichTextBold](#richtextbold) | [RichTextItalic](#richtextitalic) | [RichTextUnderline](#richtextunderline) | [RichTextStrikethrough](#richtextstrikethrough) | [RichTextSpoiler](#richtextspoiler) | [RichTextDateTime](#richtextdatetime) | [RichTextTextMention](#richtexttextmention) | [RichTextSubscript](#richtextsubscript) | [RichTextSuperscript](#richtextsuperscript) | [RichTextMarked](#richtextmarked) | [RichTextCode](#richtextcode) | [RichTextCustomEmoji](#richtextcustomemoji) | [RichTextMathematicalExpression](#richtextmathematicalexpression) | [RichTextUrl](#richtexturl) | [RichTextEmailAddress](#richtextemailaddress) | [RichTextPhoneNumber](#richtextphonenumber) | [RichTextBankCardNumber](#richtextbankcardnumber) | [RichTextTonAddress](#richtexttonaddress) | [RichTextMention](#richtextmention) | [RichTextHashtag](#richtexthashtag) | [RichTextCashtag](#richtextcashtag) | [RichTextBotCommand](#richtextbotcommand) | [RichTextButton](#richtextbutton) | [RichTextAnchor](#richtextanchor) | [RichTextAnchorLink](#richtextanchorlink) | [RichTextReference](#richtextreference) | [RichTextReferenceLink](#richtextreferencelink);
 ```
 
 ### `RichTextAnchor`
@@ -7192,6 +7522,16 @@ type RichTextTextMention = {
 };
 ```
 
+### `RichTextTonAddress`
+
+```ts
+type RichTextTonAddress = {
+  address: string;
+  text: [RichText](#richtext);
+  type: string;
+};
+```
+
 ### `RichTextUnderline`
 
 ```ts
@@ -7208,6 +7548,50 @@ type RichTextUrl = {
   text: [RichText](#richtext);
   type: string;
   url: string;
+};
+```
+
+### `RunOptions`
+
+```ts
+type RunOptions = [LongPollOptions](#longpolloptions) & {
+  exitOnError?: boolean;
+};
+```
+
+### `S3Credentials`
+
+Static S3 credentials. `sessionToken` is required for temporary (STS / role) credentials.
+
+```ts
+type S3Credentials = {
+  accessKeyId: string;
+  secretAccessKey: string;
+  sessionToken?: string;
+};
+```
+
+### `S3CredentialsProvider`
+
+Supplies credentials per request, so rotating / STS credentials stay fresh.
+
+```ts
+type S3CredentialsProvider = () => [S3Credentials](#s3credentials) | Promise<[S3Credentials](#s3credentials)>;
+```
+
+### `S3SessionStorageOptions`
+
+```ts
+type S3SessionStorageOptions = {
+  bucket: string;
+  credentials: [S3Credentials](#s3credentials) | [S3CredentialsProvider](#s3credentialsprovider);
+  crypto?: Crypto;
+  endpoint?: string;
+  fetch?: typeof fetch;
+  forcePathStyle?: boolean;
+  now?: () => Date;
+  prefix?: string;
+  region: string;
 };
 ```
 
@@ -7254,7 +7638,6 @@ type SendAnimationParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7265,13 +7648,13 @@ type SendAnimationParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   width?: number;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendAnimationResult`
@@ -7289,7 +7672,6 @@ type SendAudioParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7299,12 +7681,12 @@ type SendAudioParams = {
   parse_mode?: string;
   performer?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   title?: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendAudioResult`
@@ -7372,7 +7754,6 @@ type SendChecklistResult = [Message](#message);
 type SendContactParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7382,11 +7763,11 @@ type SendContactParams = {
   message_thread_id?: number;
   phone_number: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   vcard?: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendContactResult`
@@ -7408,7 +7789,7 @@ type SendDiceParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
 };
@@ -7428,7 +7809,6 @@ type SendDocumentParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_content_type_detection?: boolean;
   disable_notification?: boolean;
@@ -7438,11 +7818,11 @@ type SendDocumentParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendDocumentResult`
@@ -7546,7 +7926,6 @@ type SendLivePhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7557,11 +7936,11 @@ type SendLivePhotoParams = {
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendLivePhotoResult`
@@ -7576,7 +7955,6 @@ type SendLivePhotoResult = [Message](#message);
 type SendLocationParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7589,10 +7967,10 @@ type SendLocationParams = {
   message_thread_id?: number;
   protect_content?: boolean;
   proximity_alert_radius?: number;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendLocationResult`
@@ -7651,7 +8029,6 @@ type SendMessageDraftResult = boolean;
 type SendMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   entities?: [MessageEntity](#messageentity)[];
@@ -7661,11 +8038,11 @@ type SendMessageParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   text: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendMessageResult`
@@ -7690,7 +8067,7 @@ type SendPaidMediaParams = {
   parse_mode?: string;
   payload?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   star_count: number;
@@ -7712,7 +8089,6 @@ type SendPhotoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7722,11 +8098,11 @@ type SendPhotoParams = {
   parse_mode?: string;
   photo: [InputFile](#inputfile) | string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendPhotoResult`
@@ -7769,7 +8145,7 @@ type SendPollParams = {
   question: string;
   question_entities?: [MessageEntity](#messageentity)[];
   question_parse_mode?: string;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   shuffle_options?: boolean;
   type?: string;
@@ -7807,18 +8183,17 @@ type SendRichMessageDraftResult = boolean;
 type SendRichMessageParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   rich_message: [InputRichMessage](#inputrichmessage);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendRichMessageResult`
@@ -7827,13 +8202,39 @@ type SendRichMessageParams = {
 type SendRichMessageResult = [Message](#message);
 ```
 
+### `SendSharedWidgetParams`
+
+```ts
+type SendSharedWidgetParams = {
+  allow_paid_broadcast?: boolean;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  chat_id: number | string;
+  disable_notification?: boolean;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  reply_markup?: [ReplyMarkup](#replymarkup);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  widget_id: string;
+};
+```
+
+### `SendSharedWidgetResult`
+
+```ts
+type SendSharedWidgetResult = [Message](#message);
+```
+
 ### `SendStickerParams`
 
 ```ts
 type SendStickerParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   emoji?: string;
@@ -7841,11 +8242,11 @@ type SendStickerParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   sticker: [InputFile](#inputfile) | string;
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendStickerResult`
@@ -7861,7 +8262,6 @@ type SendVenueParams = {
   address: string;
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   ephemeral_message_parameters?: [EphemeralMessageParameters](#ephemeralmessageparameters);
@@ -7874,11 +8274,11 @@ type SendVenueParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   title: string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVenueResult`
@@ -7893,7 +8293,6 @@ type SendVenueResult = [Message](#message);
 type SendVideoNoteParams = {
   allow_paid_broadcast?: boolean;
   business_connection_id?: string;
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7902,12 +8301,12 @@ type SendVideoNoteParams = {
   message_effect_id?: string;
   message_thread_id?: number;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   thumbnail?: [InputFile](#inputfile) | string;
   video_note: [InputFile](#inputfile) | string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVideoNoteResult`
@@ -7924,7 +8323,6 @@ type SendVideoParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
   cover?: [InputFile](#inputfile) | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
@@ -7936,7 +8334,7 @@ type SendVideoParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   show_caption_above_media?: boolean;
   start_timestamp?: number;
@@ -7945,7 +8343,7 @@ type SendVideoParams = {
   thumbnail?: [InputFile](#inputfile) | string;
   video: [InputFile](#inputfile) | string;
   width?: number;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVideoResult`
@@ -7962,7 +8360,6 @@ type SendVoiceParams = {
   business_connection_id?: string;
   caption?: string;
   caption_entities?: [MessageEntity](#messageentity)[];
-  chat_id: number | string;
   direct_messages_topic_id?: number;
   disable_notification?: boolean;
   duration?: number;
@@ -7971,17 +8368,49 @@ type SendVoiceParams = {
   message_thread_id?: number;
   parse_mode?: string;
   protect_content?: boolean;
-  reply_markup?: [InlineKeyboardMarkup](#inlinekeyboardmarkup) | [ReplyKeyboardMarkup](#replykeyboardmarkup) | [ReplyKeyboardRemove](#replykeyboardremove) | [ForceReply](#forcereply);
+  reply_markup?: [ReplyMarkup](#replymarkup);
   reply_parameters?: [ReplyParameters](#replyparameters);
   suggested_post_parameters?: [SuggestedPostParameters](#suggestedpostparameters);
   voice: [InputFile](#inputfile) | string;
-};
+} & [ChatOrCallbackReply](#chatorcallbackreply);
 ```
 
 ### `SendVoiceResult`
 
 ```ts
 type SendVoiceResult = [Message](#message);
+```
+
+### `SendWidgetParams`
+
+```ts
+type SendWidgetParams = {
+  allow_paid_broadcast?: boolean;
+  allow_queries?: boolean;
+  caption?: string;
+  caption_entities?: [MessageEntity](#messageentity)[];
+  chat_data?: string;
+  chat_id: number | string;
+  disable_notification?: boolean;
+  height?: number;
+  html: string;
+  is_shared?: boolean;
+  message_effect_id?: string;
+  message_thread_id?: number;
+  parse_mode?: string;
+  protect_content?: boolean;
+  public_data?: string;
+  reply_markup?: [ReplyMarkup](#replymarkup);
+  reply_parameters?: [ReplyParameters](#replyparameters);
+  show_caption_above_media?: boolean;
+  width?: number;
+};
+```
+
+### `SendWidgetResult`
+
+```ts
+type SendWidgetResult = [Message](#message);
 ```
 
 ### `SentGuestMessage`
@@ -8020,10 +8449,8 @@ all of them.
 
 ```ts
 type SessionEnvelope<T> = {
-  createdAt: string;
   data: T;
   ext?: Record<string, unknown>;
-  updatedAt: string;
   v: number;
 };
 ```
@@ -8036,9 +8463,8 @@ layer claims its own namespace; `delete()` drops the whole key on flush.
 
 ```ts
 type SessionHandle<T> = {
-  readonly createdAt: Date;
   data: T;
-  readonly updatedAt: Date;
+  readonly replyTracking?: [ReplyTrackingOptions](#replytrackingoptions);
   delete: () => void;
   ext: <E extends object>(namespace: string, initial: () => E, isValid?: (slot: Record<string, unknown>) => boolean) => E;
 };
@@ -8065,7 +8491,7 @@ type SessionOptions<T> = {
   codec?: [SessionCodec](#sessioncodec);
   getSessionKey?: (ctx: [Context](#context)) => string | undefined;
   initial?: (ctx: [Context](#context)) => T;
-  now?: () => number;
+  replyTracking?: [ReplyTrackingOptions](#replytrackingoptions);
   store: [SessionStore](#sessionstore);
   ttlSeconds?: number;
 };
@@ -8613,6 +9039,18 @@ type SharedUser = {
 };
 ```
 
+### `SharedWidgetQuery`
+
+```ts
+type SharedWidgetQuery = {
+  data: string;
+  from: [User](#user);
+  id: string;
+  type: [WidgetQueryType](#widgetquerytype);
+  widget_id: string;
+};
+```
+
 ### `ShippingAddress`
 
 ```ts
@@ -8644,6 +9082,25 @@ type ShippingQuery = {
   id: string;
   invoice_payload: string;
   shipping_address: [ShippingAddress](#shippingaddress);
+};
+```
+
+### `SignAwsV4Params`
+
+Inputs for one signed request. Separated from the store so it can be tested against AWS's published vectors.
+
+```ts
+type SignAwsV4Params = {
+  body?: Uint8Array;
+  credentials: [S3Credentials](#s3credentials);
+  crypto: Crypto;
+  date: Date;
+  headers?: Record<string, string>;
+  method: string;
+  payloadSha256?: string;
+  region: string;
+  service: string;
+  url: string;
 };
 ```
 
@@ -8778,7 +9235,7 @@ type Story = {
 
 ```ts
 type StoryArea = {
-  position: [StoryAreaPosition](#storyareaposition);
+  position: [AreaPosition](#areaposition);
   type: [StoryAreaType](#storyareatype);
 };
 ```
@@ -8786,14 +9243,7 @@ type StoryArea = {
 ### `StoryAreaPosition`
 
 ```ts
-type StoryAreaPosition = {
-  corner_radius_percentage: number;
-  height_percentage: number;
-  rotation_angle: number;
-  width_percentage: number;
-  x_percentage: number;
-  y_percentage: number;
-};
+type StoryAreaPosition = [AreaPosition](#areaposition);
 ```
 
 ### `StoryAreaType`
@@ -8965,7 +9415,62 @@ type TextQuote = {
   entities?: [MessageEntity](#messageentity)[];
   is_manual?: true;
   position: number;
+  rich_texts?: [RichText](#richtext)[];
   text: string;
+};
+```
+
+### `TonNft`
+
+```ts
+type TonNft = {
+  address: string;
+  attributes?: [TonNftAttribute](#tonnftattribute)[];
+  collection_address?: string;
+  description: string;
+  gift?: [UniqueGift](#uniquegift);
+  index: string;
+  name: string;
+};
+```
+
+### `TonNftAttribute`
+
+```ts
+type TonNftAttribute = {
+  trait_type: string;
+  value: string;
+};
+```
+
+### `TonWalletCard`
+
+```ts
+type TonWalletCard = {
+  address: string;
+  amount: string;
+  background_nft_address?: string;
+  stickers: [TonWalletCardSticker](#tonwalletcardsticker)[];
+};
+```
+
+### `TonWalletCardSticker`
+
+```ts
+type TonWalletCardSticker = {
+  nft: [TonNft](#tonnft);
+  position: [AreaPosition](#areaposition);
+};
+```
+
+### `TonWalletTransfer`
+
+```ts
+type TonWalletTransfer = {
+  amount: string;
+  comment?: string;
+  peer_address: string;
+  transaction_id: string;
 };
 ```
 
@@ -9335,6 +9840,14 @@ type Update = {
 } | {
   update_id: number;
 } & {
+  widget_query: [WidgetQuery](#widgetquery);
+} | {
+  update_id: number;
+} & {
+  shared_widget_query: [SharedWidgetQuery](#sharedwidgetquery);
+} | {
+  update_id: number;
+} & {
   shipping_query: [ShippingQuery](#shippingquery);
 } | {
   update_id: number;
@@ -9517,6 +10030,8 @@ type Venue = {
 type VerifyChatParams = {
   chat_id: number | string;
   custom_description?: string;
+  custom_description_entities?: [MessageEntity](#messageentity)[];
+  custom_description_parse_mode?: string;
 };
 ```
 
@@ -9531,6 +10046,8 @@ type VerifyChatResult = boolean;
 ```ts
 type VerifyUserParams = {
   custom_description?: string;
+  custom_description_entities?: [MessageEntity](#messageentity)[];
+  custom_description_parse_mode?: string;
   user_id: number;
 };
 ```
@@ -9661,6 +10178,82 @@ type WebhookInfo = {
 };
 ```
 
+### `Widget`
+
+```ts
+type Widget = {
+  chat_data?: string;
+  height?: number;
+  html: string;
+  id?: string;
+  public_data?: string;
+  width?: number;
+};
+```
+
+### `WidgetQuery`
+
+```ts
+type WidgetQuery = {
+  chat?: [Chat](#chat);
+  chat_instance: string;
+  chat_type?: string;
+  data: string;
+  from: [User](#user);
+  id: string;
+  inline_message_id?: string;
+  message_id?: number;
+  type: [WidgetQueryType](#widgetquerytype);
+  widget_id?: string;
+};
+```
+
+### `WidgetQueryType`
+
+```ts
+type WidgetQueryType = [WidgetQueryTypeData](#widgetquerytypedata) | [WidgetQueryTypeSignData](#widgetquerytypesigndata) | [WidgetQueryTypeSentTransaction](#widgetquerytypesenttransaction);
+```
+
+### `WidgetQueryTypeData`
+
+```ts
+type WidgetQueryTypeData = {
+  type: string;
+  wallet_card?: [TonWalletCard](#tonwalletcard);
+};
+```
+
+### `WidgetQueryTypeSentTransaction`
+
+```ts
+type WidgetQueryTypeSentTransaction = {
+  msg_hash: string;
+  type: string;
+  wallet: [WidgetQueryWallet](#widgetquerywallet);
+};
+```
+
+### `WidgetQueryTypeSignData`
+
+```ts
+type WidgetQueryTypeSignData = {
+  sign_data: string;
+  type: string;
+  wallet: [WidgetQueryWallet](#widgetquerywallet);
+};
+```
+
+### `WidgetQueryWallet`
+
+```ts
+type WidgetQueryWallet = {
+  address: string;
+  amount: string;
+  public_key?: string;
+  state_init?: string;
+};
+```
+
 ### `WriteAccessAllowed`
 
 ```ts
@@ -9676,7 +10269,7 @@ type WriteAccessAllowed = {
 ### `ATTACH_PREFIX`
 
 The `attach://` URI scheme the Bot API uses to reference a multipart part
- from inside a JSON structure (ADR-011).
+ from inside a JSON structure.
 
 ```ts
 const ATTACH_PREFIX: "attach://";
@@ -9688,12 +10281,14 @@ Every documented MessageEntity kind, typo-proof versus raw strings.
 
 ```ts
 const EntityType: {
+  readonly BankCardNumber: "bank_card_number";
   readonly Blockquote: "blockquote";
   readonly Bold: "bold";
   readonly BotCommand: "bot_command";
   readonly Cashtag: "cashtag";
   readonly Code: "code";
   readonly CustomEmoji: "custom_emoji";
+  readonly DateTime: "date_time";
   readonly Email: "email";
   readonly ExpandableBlockquote: "expandable_blockquote";
   readonly Hashtag: "hashtag";
@@ -9705,6 +10300,7 @@ const EntityType: {
   readonly Strikethrough: "strikethrough";
   readonly TextLink: "text_link";
   readonly TextMention: "text_mention";
+  readonly TonAddress: "ton_address";
   readonly Underline: "underline";
   readonly Url: "url";
 };
@@ -9759,7 +10355,7 @@ const SESSION_VERSION: 1;
 `Update` field names dispatched as events (every `Update` payload key except `update_id`).
 
 ```ts
-const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot", "subscription", "stopped_message_generation"];
+const UPDATE_TYPES: readonly ["message", "edited_message", "channel_post", "edited_channel_post", "business_connection", "business_message", "edited_business_message", "deleted_business_messages", "guest_message", "message_reaction", "message_reaction_count", "inline_query", "chosen_inline_result", "callback_query", "widget_query", "shared_widget_query", "shipping_query", "pre_checkout_query", "purchased_paid_media", "poll", "poll_answer", "my_chat_member", "chat_member", "chat_join_request", "chat_boost", "removed_chat_boost", "managed_bot", "subscription", "stopped_message_generation"];
 ```
 
 ### `nextPagesWebhook`
